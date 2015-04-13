@@ -66,7 +66,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     }
     
     func startClockAndLeaderElectionService() {
-        clock.startClockService()
+        clock.setup()
         leaderElection.setup()
     }
 
@@ -80,8 +80,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if section == 0 {
             return 1
-        }
-        else {
+        } else {
             return appDelegate.mpcManager.connectedPeers.count
         }
     }
@@ -105,8 +104,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                 cell.textLabel?.text = (cell.textLabel?.text ?? "") + " * My Device * "
             }
             
-        }
-        else {
+        } else {
             let leader = appDelegate.mpcManager.leader
             if leader != nil{
                 if leader == appDelegate.mpcManager.peer {
