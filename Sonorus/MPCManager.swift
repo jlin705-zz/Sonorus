@@ -15,9 +15,9 @@ protocol MPCManagerDelegate {
     
     func lostPeer()
     
-    func invitationWasReceived(fromPeer: String)
-    
     func connectedWithPeer(peerID: MCPeerID)
+    
+    func leaderChange()
 }
 
 
@@ -35,7 +35,6 @@ class MPCManager: NSObject, MCSessionDelegate, MCNearbyServiceBrowserDelegate, M
     
     var advertiser: MCNearbyServiceAdvertiser!
     
-    var foundPeers = [MCPeerID]()
     var connectedPeers = [MCPeerID]()
     
     var invitationHandler: ((Bool, MCSession!)->Void)!
@@ -44,33 +43,34 @@ class MPCManager: NSObject, MCSessionDelegate, MCNearbyServiceBrowserDelegate, M
     override init() {
         super.init()
         
-        //peer = MCPeerID(displayName: "Advaya")//UIDevice.currentDevice().name)
-        peer = MCPeerID(displayName: "Huacong \(arc4random())")
-        //leader = peer
+        peer = MCPeerID(displayName: "Sonorus \(arc4random())")
+
         connectedPeers.append(peer)
         
         session = MCSession(peer: peer)
         session.delegate = self
         
-        browser = MCNearbyServiceBrowser(peer: peer, serviceType: "appcoda-mpc")
+        browser = MCNearbyServiceBrowser(peer: peer, serviceType: "sonorus")
         browser.delegate = self
         
-        advertiser = MCNearbyServiceAdvertiser(peer: peer, discoveryInfo: nil, serviceType: "appcoda-mpc")
+        advertiser = MCNearbyServiceAdvertiser(peer: peer, discoveryInfo: nil, serviceType: "sonorus")
         advertiser.delegate = self
+        
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "leaderChange",
+            name: "leaderChangeNotification", object: nil)
     }
     
     
     // MARK: MCNearbyServiceBrowserDelegate method implementation
     
     func browser(browser: MCNearbyServiceBrowser!, foundPeer peerID: MCPeerID!, withDiscoveryInfo info: [NSObject : AnyObject]!) {
-        //foundPeers.append(peerID)
         println("Found a new peer:")
         println(peerID)
         if leader != nil && peer == leader {
             println("Inviting peer")
             self.browser.invitePeer(peerID, toSession: self.session, withContext: nil, timeout: 20)
         }
-        println(self.connectedPeers)
+        //println(self.connectedPeers)
     }
     
     
@@ -95,15 +95,10 @@ class MPCManager: NSObject, MCSessionDelegate, MCNearbyServiceBrowserDelegate, M
     
     
     // MARK: MCNearbyServiceAdvertiserDelegate method implementation
-    
     func advertiser(advertiser: MCNearbyServiceAdvertiser!, didReceiveInvitationFromPeer peerID: MCPeerID!, withContext context: NSData!, invitationHandler: ((Bool, MCSession!) -> Void)!) {
-        //self.invitationHandler = invitationHandler
+        leader = peerID
+        NSNotificationCenter.defaultCenter().postNotificationName("getLeaderNotification", object: nil)
         
-        //delegate?.invitationWasReceived(peerID.displayName)
-        if leader == nil {
-            leader = peerID
-            NSNotificationCenter.defaultCenter().postNotificationName("getLeaderNotification", object: nil)
-        }
         invitationHandler(true, self.session)
     }
     
@@ -128,9 +123,9 @@ class MPCManager: NSObject, MCSessionDelegate, MCNearbyServiceBrowserDelegate, M
             println("Did not connect to session: \(session)")
         } */
         if state == MCSessionState.Connected {
+            connectedPeers.append(peerID)
             delegate?.connectedWithPeer(peerID)
         }
-        delegate?.foundPeer()
     }
     
     
@@ -144,8 +139,6 @@ class MPCManager: NSObject, MCSessionDelegate, MCNearbyServiceBrowserDelegate, M
             let dictionary: [String: AnyObject] = ["data": message.msg, "fromPeer": peerID]
             NSNotificationCenter.defaultCenter().postNotificationName("receivedElectionNotification", object: dictionary)
         }
-        
-        
     }
     
     
@@ -234,5 +227,9 @@ class MPCManager: NSObject, MCSessionDelegate, MCNearbyServiceBrowserDelegate, M
         }
         
         return true
+    }
+    
+    func leaderChange () {
+        delegate?.leaderChange()
     }
 }

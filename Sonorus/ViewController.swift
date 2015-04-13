@@ -71,43 +71,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         clock.startClockService()
         leaderElection.setup()
     }
-    
-    // MARK: IBAction method implementation
-//    
-//    @IBAction func startStopAdvertising(sender: AnyObject) {
-//        let actionSheet = UIAlertController(title: "", message: "Change Visibility", preferredStyle: UIAlertControllerStyle.ActionSheet)
-//        
-//        var actionTitle: String
-//        if isAdvertising == true {
-//            actionTitle = "Make me invisible to others"
-//        }
-//        else{
-//            actionTitle = "Make me visible to others"
-//        }
-//        
-//        let visibilityAction: UIAlertAction = UIAlertAction(title: actionTitle, style: UIAlertActionStyle.Default) { (alertAction) -> Void in
-//            if self.isAdvertising == true {
-//                self.appDelegate.mpcManager.advertiser.stopAdvertisingPeer()
-//            }
-//            else{
-//                self.appDelegate.mpcManager.advertiser.startAdvertisingPeer()
-//            }
-//            
-//            self.isAdvertising = !self.isAdvertising
-//        }
-//        
-//        let cancelAction = UIAlertAction(title: "Cancel", style: UIAlertActionStyle.Cancel) { (alertAction) -> Void in
-//            
-//        }
-//        
-//        actionSheet.addAction(visibilityAction)
-//        actionSheet.addAction(cancelAction)
-//        
-//        self.presentViewController(actionSheet, animated: true, completion: nil)
-//    }
-    
-    
-    
+
     // MARK: UITableView related method implementation
     
     func numberOfSectionsInTableView(tableView: UITableView) -> Int {
@@ -116,7 +80,6 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        //return appDelegate.mpcManager.foundPeers.count
         if section == 0 {
             return 1
         }
@@ -169,9 +132,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     
     func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        //let selectedPeer = appDelegate.mpcManager.foundPeers[indexPath.row] as MCPeerID
         
-        //appDelegate.mpcManager.browser.invitePeer(selectedPeer, toSession: appDelegate.mpcManager.session, withContext: nil, timeout: 20)
     }
     
     
@@ -186,39 +147,14 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         tblPeers.reloadData()
     }
     
-    func invitationWasReceived(fromPeer: String) {
-        let alert = UIAlertController(title: "", message: "\(fromPeer) wants to chat with you.", preferredStyle: UIAlertControllerStyle.Alert)
-        
-        let acceptAction: UIAlertAction = UIAlertAction(title: "Accept", style: UIAlertActionStyle.Default) { (alertAction) -> Void in
-            self.appDelegate.mpcManager.invitationHandler(true, self.appDelegate.mpcManager.session)
-        }
-        
-        let declineAction = UIAlertAction(title: "Cancel", style: UIAlertActionStyle.Cancel) { (alertAction) -> Void in
-            self.appDelegate.mpcManager.invitationHandler(false, nil)
-        }
-        
-        alert.addAction(acceptAction)
-        alert.addAction(declineAction)
-        
-        NSOperationQueue.mainQueue().addOperationWithBlock { () -> Void in
-            self.presentViewController(alert, animated: true, completion: nil)
-        }
-    }
-    
-    
     func connectedWithPeer(peerID: MCPeerID) {
-        /* NSOperationQueue.mainQueue().addOperationWithBlock { () -> Void in
-        self.performSegueWithIdentifier("idSegueChat", sender: self)
-        } */
-        appDelegate.mpcManager.connectedPeers.append(peerID)
         println("Connected with a new peer:")
         println(peerID)
-        for p in appDelegate.mpcManager.connectedPeers {
-            println(p, p.hashValue)
-        }
-        if appDelegate.mpcManager.leader == nil {
-            appDelegate.mpcManager.leader = peerID
-        }
+
+        tblPeers.reloadData()
+    }
+    
+    func leaderChange() {
         tblPeers.reloadData()
     }
     
