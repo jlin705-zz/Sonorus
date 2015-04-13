@@ -143,10 +143,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         tblPeers.reloadData()
     }
     
-    func connectedWithPeer(peerID: MCPeerID) {
-        println("Connected with a new peer:")
-        println(peerID)
-
+    func connectedWithPeer() {
         tblPeers.reloadData()
     }
     

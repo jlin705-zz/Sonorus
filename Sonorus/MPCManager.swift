@@ -64,8 +64,7 @@ class MPCManager: NSObject, MCSessionDelegate, MCNearbyServiceBrowserDelegate, M
     // MARK: MCNearbyServiceBrowserDelegate method implementation
     
     func browser(browser: MCNearbyServiceBrowser!, foundPeer peerID: MCPeerID!, withDiscoveryInfo info: [NSObject : AnyObject]!) {
-        println("Found a new peer:")
-        println(peerID)
+        println("Found peer: \(peerID.displayName)")
         if leader != nil && peer == leader {
             println("Inviting peer")
             self.browser.invitePeer(peerID, toSession: self.session, withContext: nil, timeout: 20)
@@ -83,7 +82,7 @@ class MPCManager: NSObject, MCSessionDelegate, MCNearbyServiceBrowserDelegate, M
         }
         
         //post notification to to start a new election
-        println("lost peer \(peerID)")
+        println("Lost peer: \(peerID.displayName)")
         NSNotificationCenter.defaultCenter().postNotificationName("lostPeerNotification", object: nil)
         delegate?.lostPeer()
     }
@@ -113,12 +112,15 @@ class MPCManager: NSObject, MCSessionDelegate, MCNearbyServiceBrowserDelegate, M
     func session(session: MCSession!, peer peerID: MCPeerID!, didChangeState state: MCSessionState) {
         switch state{
         case MCSessionState.Connected:
-            println("Connected to session: \(session)")
+            //println("Connected to session: \(session)")
+            println("Connected to session")
+            println("Connected with a new peer: \(peerID.displayName)")
             connectedPeers.append(peerID)
             delegate?.connectedWithPeer(peerID)
             
         case MCSessionState.Connecting:
-            println("Connecting to session: \(session)")
+            //println("Connecting to session: \(session)")
+            println("Connecting to session")
             
         default:
             println("Did not connect to session: \(session)")
