@@ -32,7 +32,7 @@ class Clock: NSObject {
         super.init()
     }
     
-    func startClockService() {
+    func setup() {
         self.hostID = appDelegate.mpcManager.leader
         
         self.peerID = appDelegate.mpcManager.peer

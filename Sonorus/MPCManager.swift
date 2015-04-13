@@ -60,12 +60,16 @@ class MPCManager: NSObject, MCSessionDelegate, MCNearbyServiceBrowserDelegate, M
             name: "leaderChangeNotification", object: nil)
     }
     
+    deinit() {
+        session.disconnect()
+    }
+    
     
     // MARK: MCNearbyServiceBrowserDelegate method implementation
     
     func browser(browser: MCNearbyServiceBrowser!, foundPeer peerID: MCPeerID!, withDiscoveryInfo info: [NSObject : AnyObject]!) {
         println("Found peer: \(peerID.displayName)")
-        if leader != nil && peer == leader {
+        if leader != nil && leader == peer {
             println("Inviting peer")
             self.browser.invitePeer(peerID, toSession: self.session, withContext: nil, timeout: 20)
         }
@@ -123,7 +127,7 @@ class MPCManager: NSObject, MCSessionDelegate, MCNearbyServiceBrowserDelegate, M
             println("Connecting to session")
             
         default:
-            println("Did not connect to session: \(session)")
+            println("Did not connect to session")
         }
     }
     
