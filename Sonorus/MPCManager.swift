@@ -98,6 +98,7 @@ class MPCManager: NSObject, MCSessionDelegate, MCNearbyServiceBrowserDelegate, M
     func advertiser(advertiser: MCNearbyServiceAdvertiser!, didReceiveInvitationFromPeer peerID: MCPeerID!, withContext context: NSData!, invitationHandler: ((Bool, MCSession!) -> Void)!) {
         leader = peerID
         NSNotificationCenter.defaultCenter().postNotificationName("getLeaderNotification", object: nil)
+        delegate?.leaderChange()
         
         invitationHandler(true, self.session)
     }
@@ -109,11 +110,11 @@ class MPCManager: NSObject, MCSessionDelegate, MCNearbyServiceBrowserDelegate, M
     
     
     // MARK: MCSessionDelegate method implementation
-    
     func session(session: MCSession!, peer peerID: MCPeerID!, didChangeState state: MCSessionState) {
-        /* switch state{
+        switch state{
         case MCSessionState.Connected:
             println("Connected to session: \(session)")
+            connectedPeers.append(peerID)
             delegate?.connectedWithPeer(peerID)
             
         case MCSessionState.Connecting:
@@ -121,10 +122,6 @@ class MPCManager: NSObject, MCSessionDelegate, MCNearbyServiceBrowserDelegate, M
             
         default:
             println("Did not connect to session: \(session)")
-        } */
-        if state == MCSessionState.Connected {
-            connectedPeers.append(peerID)
-            delegate?.connectedWithPeer(peerID)
         }
     }
     

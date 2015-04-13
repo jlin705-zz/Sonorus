@@ -48,8 +48,6 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         
         NSNotificationCenter.defaultCenter().addObserver(self, selector: "startClockAndLeaderElectionService",
             name: "getLeaderNotification", object: nil)
-        
-        
     }
     
     override func didReceiveMemoryWarning() {
@@ -96,8 +94,6 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             return "Devices"
         }
     }
-    
-    
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         var cell = tableView.dequeueReusableCellWithIdentifier("idCellPeer") as! UITableViewCell
