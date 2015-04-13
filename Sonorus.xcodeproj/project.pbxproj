@@ -15,7 +15,6 @@
 		E22263531ADC162600E454EC /* MPCManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E222634A1ADC162600E454EC /* MPCManager.swift */; };
 		E22263561ADC167300E454EC /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E22263551ADC167300E454EC /* AppDelegate.swift */; };
 		E22263581ADC171F00E454EC /* Clock.swift in Sources */ = {isa = PBXBuildFile; fileRef = E22263571ADC171F00E454EC /* Clock.swift */; };
-		E222635A1ADC175F00E454EC /* MainView.xib in Resources */ = {isa = PBXBuildFile; fileRef = E22263591ADC175F00E454EC /* MainView.xib */; };
 		E222635C1ADC177D00E454EC /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E222635B1ADC177D00E454EC /* Main.storyboard */; };
 		E2AED02D1ADC147D0031B9B4 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AED02C1ADC147D0031B9B4 /* ViewController.swift */; };
 		E2AED0321ADC147D0031B9B4 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E2AED0311ADC147D0031B9B4 /* Images.xcassets */; };
@@ -42,7 +41,6 @@
 		E222634A1ADC162600E454EC /* MPCManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPCManager.swift; sourceTree = "<group>"; };
 		E22263551ADC167300E454EC /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E22263571ADC171F00E454EC /* Clock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Clock.swift; sourceTree = "<group>"; };
-		E22263591ADC175F00E454EC /* MainView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MainView.xib; sourceTree = "<group>"; };
 		E222635B1ADC177D00E454EC /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
 		E2AED0251ADC147D0031B9B4 /* Sonorus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sonorus.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E2AED0291ADC147D0031B9B4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -102,7 +100,6 @@
 				E22263491ADC162600E454EC /* Message.swift */,
 				E222634A1ADC162600E454EC /* MPCManager.swift */,
 				E22263571ADC171F00E454EC /* Clock.swift */,
-				E22263591ADC175F00E454EC /* MainView.xib */,
 				E222635B1ADC177D00E454EC /* Main.storyboard */,
 				E2AED0311ADC147D0031B9B4 /* Images.xcassets */,
 				E2AED0331ADC147D0031B9B4 /* LaunchScreen.xib */,
@@ -217,7 +214,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				E222635C1ADC177D00E454EC /* Main.storyboard in Resources */,
-				E222635A1ADC175F00E454EC /* MainView.xib in Resources */,
 				E2AED0351ADC147D0031B9B4 /* LaunchScreen.xib in Resources */,
 				E2AED0321ADC147D0031B9B4 /* Images.xcassets in Resources */,
 			);

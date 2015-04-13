@@ -102,6 +102,7 @@ class MPCManager: NSObject, MCSessionDelegate, MCNearbyServiceBrowserDelegate, M
         //delegate?.invitationWasReceived(peerID.displayName)
         if leader == nil {
             leader = peerID
+            NSNotificationCenter.defaultCenter().postNotificationName("getLeaderNotification", object: nil)
         }
         invitationHandler(true, self.session)
     }
