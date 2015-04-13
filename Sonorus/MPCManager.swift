@@ -60,7 +60,7 @@ class MPCManager: NSObject, MCSessionDelegate, MCNearbyServiceBrowserDelegate, M
             name: "leaderChangeNotification", object: nil)
     }
     
-    deinit() {
+    deinit {
         session.disconnect()
     }
     
