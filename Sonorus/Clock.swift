@@ -45,9 +45,6 @@ class Clock: NSObject {
             self.clientTimer = NSTimer.scheduledTimerWithTimeInterval(5, target: self, selector: "clientSendRequest", userInfo: nil, repeats: true)
         }
         
-        var time = self.getTimeInterval()
-        var sleepTime = 1000 - time * 1000 % 1000
-        usleep(useconds_t(sleepTime))
         // Create timer to show on screen
         self.showTimer = NSTimer.scheduledTimerWithTimeInterval(0.001, target: self, selector: "showTime", userInfo: nil, repeats: true)
         
@@ -123,11 +120,6 @@ class Clock: NSObject {
         var t4 = message.arvtime
         
         self.offset = ((t2 - t1) + (t3 - t4))/2
-        println(offset)
-        
-        var time = self.getTimeInterval()
-        var sleepTime = 1000 - time * 1000 % 1000
-        usleep(useconds_t(sleepTime))
     }
     
     func getClock() -> NSDate {
@@ -141,13 +133,13 @@ class Clock: NSObject {
         return NSDate.timeIntervalSinceReferenceDate() + offset
     }
     
-    func showTime() {
-        
-        
+    func showTime() { 
         delegate?.displayTime(self.getClock())
     }
     
     func handleLeaderChangedWithNotification(notification: NSNotification) {
+        self.hostID = appDelegate.mpcManager.leader
+        
         if self.peerID != self.hostID {
             self.clientTimer?.invalidate()
         } else {
