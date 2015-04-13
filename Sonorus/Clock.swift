@@ -120,6 +120,7 @@ class Clock: NSObject {
         var t4 = message.arvtime
         
         self.offset = ((t2 - t1) + (t3 - t4))/2
+        println(offset)
     }
     
     func getClock() -> NSDate {
@@ -140,10 +141,10 @@ class Clock: NSObject {
     func handleLeaderChangedWithNotification(notification: NSNotification) {
         self.hostID = appDelegate.mpcManager.leader
         
-        if self.peerID != self.hostID {
+        if self.peerID == self.hostID {
             self.clientTimer?.invalidate()
         } else {
-            self.clientTimer = NSTimer.scheduledTimerWithTimeInterval(60, target: self, selector: "clientSendRequest", userInfo: nil, repeats: true)
+            self.clientTimer = NSTimer.scheduledTimerWithTimeInterval(5, target: self, selector: "clientSendRequest", userInfo: nil, repeats: true)
         }
     }
 }
