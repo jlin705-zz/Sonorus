@@ -15,7 +15,7 @@ protocol MPCManagerDelegate {
     
     func lostPeer()
     
-    func connectedWithPeer(peerID: MCPeerID)
+    func connectedWithPeer()
     
     func leaderChange()
 }
@@ -116,7 +116,7 @@ class MPCManager: NSObject, MCSessionDelegate, MCNearbyServiceBrowserDelegate, M
             println("Connected to session")
             println("Connected with a new peer: \(peerID.displayName)")
             connectedPeers.append(peerID)
-            delegate?.connectedWithPeer(peerID)
+            delegate?.connectedWithPeer()
             
         case MCSessionState.Connecting:
             //println("Connecting to session: \(session)")
