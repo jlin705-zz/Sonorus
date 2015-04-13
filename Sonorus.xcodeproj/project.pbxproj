@@ -7,9 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		E2AED02B1ADC147D0031B9B4 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AED02A1ADC147D0031B9B4 /* AppDelegate.swift */; };
+		E222634D1ADC162600E454EC /* ChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E22263441ADC162600E454EC /* ChatViewController.swift */; };
+		E222634F1ADC162600E454EC /* ClockMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = E22263461ADC162600E454EC /* ClockMessage.swift */; };
+		E22263501ADC162600E454EC /* LeaderElection.swift in Sources */ = {isa = PBXBuildFile; fileRef = E22263471ADC162600E454EC /* LeaderElection.swift */; };
+		E22263511ADC162600E454EC /* LeaderElectMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = E22263481ADC162600E454EC /* LeaderElectMessage.swift */; };
+		E22263521ADC162600E454EC /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = E22263491ADC162600E454EC /* Message.swift */; };
+		E22263531ADC162600E454EC /* MPCManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E222634A1ADC162600E454EC /* MPCManager.swift */; };
+		E22263561ADC167300E454EC /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E22263551ADC167300E454EC /* AppDelegate.swift */; };
+		E22263581ADC171F00E454EC /* Clock.swift in Sources */ = {isa = PBXBuildFile; fileRef = E22263571ADC171F00E454EC /* Clock.swift */; };
+		E222635A1ADC175F00E454EC /* MainView.xib in Resources */ = {isa = PBXBuildFile; fileRef = E22263591ADC175F00E454EC /* MainView.xib */; };
+		E222635C1ADC177D00E454EC /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E222635B1ADC177D00E454EC /* Main.storyboard */; };
 		E2AED02D1ADC147D0031B9B4 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AED02C1ADC147D0031B9B4 /* ViewController.swift */; };
-		E2AED0301ADC147D0031B9B4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E2AED02E1ADC147D0031B9B4 /* Main.storyboard */; };
 		E2AED0321ADC147D0031B9B4 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E2AED0311ADC147D0031B9B4 /* Images.xcassets */; };
 		E2AED0351ADC147D0031B9B4 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = E2AED0331ADC147D0031B9B4 /* LaunchScreen.xib */; };
 		E2AED0411ADC147D0031B9B4 /* SonorusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AED0401ADC147D0031B9B4 /* SonorusTests.swift */; };
@@ -26,11 +34,19 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		E22263441ADC162600E454EC /* ChatViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatViewController.swift; sourceTree = "<group>"; };
+		E22263461ADC162600E454EC /* ClockMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ClockMessage.swift; sourceTree = "<group>"; };
+		E22263471ADC162600E454EC /* LeaderElection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LeaderElection.swift; sourceTree = "<group>"; };
+		E22263481ADC162600E454EC /* LeaderElectMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LeaderElectMessage.swift; sourceTree = "<group>"; };
+		E22263491ADC162600E454EC /* Message.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
+		E222634A1ADC162600E454EC /* MPCManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPCManager.swift; sourceTree = "<group>"; };
+		E22263551ADC167300E454EC /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		E22263571ADC171F00E454EC /* Clock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Clock.swift; sourceTree = "<group>"; };
+		E22263591ADC175F00E454EC /* MainView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MainView.xib; sourceTree = "<group>"; };
+		E222635B1ADC177D00E454EC /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
 		E2AED0251ADC147D0031B9B4 /* Sonorus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sonorus.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E2AED0291ADC147D0031B9B4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		E2AED02A1ADC147D0031B9B4 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E2AED02C1ADC147D0031B9B4 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
-		E2AED02F1ADC147D0031B9B4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		E2AED0311ADC147D0031B9B4 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		E2AED0341ADC147D0031B9B4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
 		E2AED03A1ADC147D0031B9B4 /* SonorusTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SonorusTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -77,9 +93,17 @@
 		E2AED0271ADC147D0031B9B4 /* Sonorus */ = {
 			isa = PBXGroup;
 			children = (
-				E2AED02A1ADC147D0031B9B4 /* AppDelegate.swift */,
 				E2AED02C1ADC147D0031B9B4 /* ViewController.swift */,
-				E2AED02E1ADC147D0031B9B4 /* Main.storyboard */,
+				E22263441ADC162600E454EC /* ChatViewController.swift */,
+				E22263461ADC162600E454EC /* ClockMessage.swift */,
+				E22263551ADC167300E454EC /* AppDelegate.swift */,
+				E22263471ADC162600E454EC /* LeaderElection.swift */,
+				E22263481ADC162600E454EC /* LeaderElectMessage.swift */,
+				E22263491ADC162600E454EC /* Message.swift */,
+				E222634A1ADC162600E454EC /* MPCManager.swift */,
+				E22263571ADC171F00E454EC /* Clock.swift */,
+				E22263591ADC175F00E454EC /* MainView.xib */,
+				E222635B1ADC177D00E454EC /* Main.storyboard */,
 				E2AED0311ADC147D0031B9B4 /* Images.xcassets */,
 				E2AED0331ADC147D0031B9B4 /* LaunchScreen.xib */,
 				E2AED0281ADC147D0031B9B4 /* Supporting Files */,
@@ -192,7 +216,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E2AED0301ADC147D0031B9B4 /* Main.storyboard in Resources */,
+				E222635C1ADC177D00E454EC /* Main.storyboard in Resources */,
+				E222635A1ADC175F00E454EC /* MainView.xib in Resources */,
 				E2AED0351ADC147D0031B9B4 /* LaunchScreen.xib in Resources */,
 				E2AED0321ADC147D0031B9B4 /* Images.xcassets in Resources */,
 			);
@@ -212,8 +237,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E22263561ADC167300E454EC /* AppDelegate.swift in Sources */,
+				E22263511ADC162600E454EC /* LeaderElectMessage.swift in Sources */,
+				E22263531ADC162600E454EC /* MPCManager.swift in Sources */,
+				E222634F1ADC162600E454EC /* ClockMessage.swift in Sources */,
+				E22263581ADC171F00E454EC /* Clock.swift in Sources */,
 				E2AED02D1ADC147D0031B9B4 /* ViewController.swift in Sources */,
-				E2AED02B1ADC147D0031B9B4 /* AppDelegate.swift in Sources */,
+				E222634D1ADC162600E454EC /* ChatViewController.swift in Sources */,
+				E22263521ADC162600E454EC /* Message.swift in Sources */,
+				E22263501ADC162600E454EC /* LeaderElection.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -236,14 +268,6 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
-		E2AED02E1ADC147D0031B9B4 /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				E2AED02F1ADC147D0031B9B4 /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
 		E2AED0331ADC147D0031B9B4 /* LaunchScreen.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -411,6 +435,7 @@
 				E2AED0461ADC147D0031B9B4 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		E2AED0471ADC147D0031B9B4 /* Build configuration list for PBXNativeTarget "SonorusTests" */ = {
 			isa = XCConfigurationList;
@@ -419,6 +444,7 @@
 				E2AED0491ADC147D0031B9B4 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

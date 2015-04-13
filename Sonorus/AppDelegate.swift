@@ -1,9 +1,9 @@
 //
 //  AppDelegate.swift
-//  Sonorus
+//  MPCRevisited
 //
-//  Created by Qinyu Tong on 4/13/15.
-//  Copyright (c) 2015 DS-Team15. All rights reserved.
+//  Created by Gabriel Theodoropoulos on 11/1/15.
+//  Copyright (c) 2015 Appcoda. All rights reserved.
 //
 
 import UIKit
@@ -13,9 +13,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
 
+    var mpcManager: MPCManager!
 
+    
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         // Override point for customization after application launch.
+        
+        mpcManager = MPCManager()
+        
         return true
     }
 
