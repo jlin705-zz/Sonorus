@@ -188,6 +188,12 @@ class MPCManager: NSObject, MCSessionDelegate, MCNearbyServiceBrowserDelegate, M
         let message = Message(typeTmp: type, msgTmp: payload)
         let data = NSKeyedArchiver.archivedDataWithRootObject(message)
         
+        println("boradcast \(type) to:")
+        
+        for p in connectedPeers {
+            println(p.displayName)
+        }
+        
         if !session.sendData(data, toPeers: connectedPeers as [AnyObject], withMode: MCSessionSendDataMode.Reliable, error: &error) {
             println(error?.localizedDescription)
             return false
