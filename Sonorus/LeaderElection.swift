@@ -53,6 +53,7 @@ class LeaderElection: NSObject{
             appDelegate.mpcManager.sendDataBroadcastReliable(messagePayload: victMsg, messageType: "leaderElection")
             leader = me //set leader to self
             appDelegate.mpcManager.leader = me
+            println("change leader to \(me.displayName)")
             //notify leader changed
             NSNotificationCenter.defaultCenter().postNotificationName("leaderChangeNotification", object: nil)
         }
@@ -93,6 +94,7 @@ class LeaderElection: NSObject{
                 self.receiveVictory = true
                 self.leader = fromPeer //save leader
                 appDelegate.mpcManager.leader = fromPeer
+                println("change leader to \(fromPeer.displayName)")
             NSNotificationCenter.defaultCenter().postNotificationName("leaderChangeNotification", object: nil)
             default:
                 println("illegel election msg kind")
