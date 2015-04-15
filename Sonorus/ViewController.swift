@@ -25,8 +25,8 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
         
+        // Do any additional setup after loading the view, typically from a nib.
         tblPeers.delegate = self
         tblPeers.dataSource = self
         
@@ -36,7 +36,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         
         tblPeers.reloadData()
         
-        var timer = NSTimer.scheduledTimerWithTimeInterval(5.0, target: self, selector: Selector("startBrowsing"), userInfo: nil, repeats: false)
+        var timer = NSTimer.scheduledTimerWithTimeInterval(3, target: self, selector: Selector("startBrowsing"), userInfo: nil, repeats: false)
         isAdvertising = true
         
         clockTime.text = "Clock Time"
@@ -58,7 +58,6 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     func startBrowsing() {
         if appDelegate.mpcManager.leader == nil {
             appDelegate.mpcManager.leader = appDelegate.mpcManager.peer
-            leaderElection.leader = appDelegate.mpcManager.peer
             NSNotificationCenter.defaultCenter().postNotificationName("getLeaderNotification", object: nil)
         }
         tblPeers.reloadData()
@@ -71,7 +70,6 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     }
 
     // MARK: UITableView related method implementation
-    
     func numberOfSectionsInTableView(tableView: UITableView) -> Int {
         return 2
     }
@@ -81,7 +79,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         if section == 0 {
             return 1
         } else {
-            return appDelegate.mpcManager.connectedPeers.count
+            return appDelegate.mpcManager.viewPeers.count
         }
     }
     
@@ -98,7 +96,8 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         var cell = tableView.dequeueReusableCellWithIdentifier("idCellPeer") as! UITableViewCell
         
         if indexPath.section != 0 {
-            let peerID = appDelegate.mpcManager.connectedPeers[indexPath.row]
+            let peerID = appDelegate.mpcManager.viewPeers.allObjects[indexPath.row] as! MCPeerID
+            
             cell.textLabel?.text = peerID.displayName
             if peerID == appDelegate.mpcManager.peer {
                 cell.textLabel?.text = (cell.textLabel?.text ?? "") + " * My Device * "
@@ -106,6 +105,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             
         } else {
             let leader = appDelegate.mpcManager.leader
+            
             if leader != nil{
                 if leader == appDelegate.mpcManager.peer {
                     cell.textLabel?.text = appDelegate.mpcManager.leader!.displayName + " * My Device * "
@@ -116,6 +116,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                 cell.textLabel?.text = "Initializing..."
             }
         }
+        
         return cell
     }
     
@@ -133,20 +134,32 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     // MARK: MPCManagerDelegate method implementation
     
     func foundPeer() {
-        tblPeers.reloadData()
+        dispatch_async(dispatch_get_main_queue()) {
+            () -> Void in
+            self.tblPeers.reloadData()
+        }
     }
     
     
     func lostPeer() {
-        tblPeers.reloadData()
+        dispatch_async(dispatch_get_main_queue()) {
+            () -> Void in
+            self.tblPeers.reloadData()
+        }
     }
     
     func connectedWithPeer() {
-        tblPeers.reloadData()
+        dispatch_async(dispatch_get_main_queue()) {
+            () -> Void in
+            self.tblPeers.reloadData()
+        }
     }
     
     func leaderChange() {
-        tblPeers.reloadData()
+        dispatch_async(dispatch_get_main_queue()) {
+            () -> Void in
+            self.tblPeers.reloadData()
+        }
     }
     
     func displayTime(time: NSDate) {

@@ -35,17 +35,20 @@ class MPCManager: NSObject, MCSessionDelegate, MCNearbyServiceBrowserDelegate, M
     
     var advertiser: MCNearbyServiceAdvertiser!
     
-    var connectedPeers = [MCPeerID]()
+    var connectedPeers = NSMutableSet() //for broadcast, not include self
     
-    var invitationHandler: ((Bool, MCSession!)->Void)!
-    
+    var viewPeers = NSMutableSet() //for display, include self
+
+    //var lock: NSObject!
     
     override init() {
         super.init()
         
+        //self.lock = NSObject()
+        
         peer = MCPeerID(displayName: "Sonorus \(arc4random())")
 
-        connectedPeers.append(peer)
+        viewPeers.addObject(peer)
         
         session = MCSession(peer: peer)
         session.delegate = self
@@ -60,7 +63,8 @@ class MPCManager: NSObject, MCSessionDelegate, MCNearbyServiceBrowserDelegate, M
             name: "leaderChangeNotification", object: nil)
     }
     
-    deinit {
+    func quit() {
+        println("quit, disconnect")
         session.disconnect()
     }
     
@@ -78,17 +82,17 @@ class MPCManager: NSObject, MCSessionDelegate, MCNearbyServiceBrowserDelegate, M
     
     
     func browser(browser: MCNearbyServiceBrowser!, lostPeer peerID: MCPeerID!) {
-        for (index, aPeer) in enumerate(connectedPeers){
-            if aPeer == peerID {
-                connectedPeers.removeAtIndex(index)
-                break
-            }
-        }
+//        connectedPeers.removeObject(peerID)
+//        viewPeers.removeObject(peerID)
+        
+        println("Lost peer: \(peerID.displayName)")
+//        delegate?.lostPeer()
         
         //post notification to to start a new election
-        println("Lost peer: \(peerID.displayName)")
-        NSNotificationCenter.defaultCenter().postNotificationName("lostPeerNotification", object: nil)
-        delegate?.lostPeer()
+//        if peerID == leader {
+//            leader = nil
+//            NSNotificationCenter.defaultCenter().postNotificationName("lostLeaderNotification", object: nil)
+//        }
     }
     
     
@@ -99,11 +103,12 @@ class MPCManager: NSObject, MCSessionDelegate, MCNearbyServiceBrowserDelegate, M
     
     // MARK: MCNearbyServiceAdvertiserDelegate method implementation
     func advertiser(advertiser: MCNearbyServiceAdvertiser!, didReceiveInvitationFromPeer peerID: MCPeerID!, withContext context: NSData!, invitationHandler: ((Bool, MCSession!) -> Void)!) {
-        leader = peerID
-        NSNotificationCenter.defaultCenter().postNotificationName("getLeaderNotification", object: nil)
-        delegate?.leaderChange()
         
+        leader = peerID
+        delegate?.leaderChange()
         invitationHandler(true, self.session)
+        
+        NSNotificationCenter.defaultCenter().postNotificationName("getLeaderNotification", object: nil)
     }
     
     
@@ -115,30 +120,60 @@ class MPCManager: NSObject, MCSessionDelegate, MCNearbyServiceBrowserDelegate, M
     // MARK: MCSessionDelegate method implementation
     func session(session: MCSession!, peer peerID: MCPeerID!, didChangeState state: MCSessionState) {
         switch state{
-        case MCSessionState.Connected:
-            //println("Connected to session: \(session)")
-            println("Connected to session")
-            println("Connected with a new peer: \(peerID.displayName)")
-            connectedPeers.append(peerID)
-            delegate?.connectedWithPeer()
+            case MCSessionState.Connected:
+                //println("Connected to session: \(session)")
+                println("Connected to session")
+                println("Connected with a new peer: \(peerID.displayName)")
+                
+                connectedPeers.addObject(peerID)
+                viewPeers.addObject(peerID)
+                
+                delegate?.connectedWithPeer()
             
-        case MCSessionState.Connecting:
-            //println("Connecting to session: \(session)")
-            println("Connecting to session")
+            case MCSessionState.Connecting:
+                //println("Connecting to session: \(session)")
+                println("Connecting to session \(peerID.displayName)")
             
-        default:
-            println("Did not connect to session")
+            case MCSessionState.NotConnected:
+                println("Session lost \(peerID.displayName)")
+            
+                // Update connected peers list
+                connectedPeers.removeObject(peerID)
+                viewPeers.removeObject(peerID)
+
+                //post notification to to start a new election
+                //objc_sync_enter(lock)
+                if peerID == leader {
+                    leader = nil
+                    println("send lost leader notification")
+                    NSNotificationCenter.defaultCenter().postNotificationName("lostLeaderNotification", object: nil)
+                }
+                //objc_sync_exit(lock)
+            
+                delegate?.lostPeer()
+
+            default:
+                println("Unknown state \(state)")
         }
     }
     
     
     func session(session: MCSession!, didReceiveData data: NSData!, fromPeer peerID: MCPeerID!) {
+        // add peer back to connectedPeers in case that framework lostPeer accidently
+//        if !self.connectedPeers.containsObject(peerID) {
+//            self.connectedPeers.addObject(peerID)
+//            self.viewPeers.addObject(peerID)
+//            
+//            self.delegate?.foundPeer()
+//        }
+        
         let message = NSKeyedUnarchiver.unarchiveObjectWithData(data) as! Message
+        
         if message.type == "clock" {
             let dictionary: [String: AnyObject] = ["data": message.msg, "fromPeer": peerID]
             NSNotificationCenter.defaultCenter().postNotificationName("receivedClockDataNotification", object: dictionary)
-        }
-        else if message.type == "leaderElection" {
+            
+        } else if message.type == "leaderElection" {
             let dictionary: [String: AnyObject] = ["data": message.msg, "fromPeer": peerID]
             NSNotificationCenter.defaultCenter().postNotificationName("receivedElectionNotification", object: dictionary)
         }
@@ -154,20 +189,6 @@ class MPCManager: NSObject, MCSessionDelegate, MCNearbyServiceBrowserDelegate, M
     
     
     // MARK: Custom method implementation
-    
-    func sendData(dictionaryWithData dictionary: Dictionary<String, String>, toPeer targetPeer: MCPeerID) -> Bool {
-        let dataToSend = NSKeyedArchiver.archivedDataWithRootObject(dictionary)
-        let peersArray = NSArray(object: targetPeer)
-        var error: NSError?
-        
-        if !session.sendData(dataToSend, toPeers: peersArray as [AnyObject], withMode: MCSessionSendDataMode.Reliable, error: &error) {
-            println(error?.localizedDescription)
-            return false
-        }
-        
-        return true
-    }
-    
     func sendDataUnicastReliable(messagePayload payload: NSData, messageType type: String, toPeer targetPeer: MCPeerID) -> Bool{
         
         let peersArray = NSArray(object: targetPeer)
@@ -194,11 +215,7 @@ class MPCManager: NSObject, MCSessionDelegate, MCNearbyServiceBrowserDelegate, M
         
         println("boradcast \(type) to:")
         
-        for p in connectedPeers {
-            println(p.displayName)
-        }
-        
-        if !session.sendData(data, toPeers: connectedPeers as [AnyObject], withMode: MCSessionSendDataMode.Reliable, error: &error) {
+        if !session.sendData(data, toPeers: self.connectedPeers.allObjects, withMode: MCSessionSendDataMode.Reliable, error: &error) {
             println(error?.localizedDescription)
             return false
         }
@@ -230,7 +247,7 @@ class MPCManager: NSObject, MCSessionDelegate, MCNearbyServiceBrowserDelegate, M
         let message = Message(typeTmp: type, msgTmp: payload)
         let data = NSKeyedArchiver.archivedDataWithRootObject(message)
         
-        if !session.sendData(data, toPeers: connectedPeers as [AnyObject], withMode: MCSessionSendDataMode.Unreliable, error: &error) {
+        if !session.sendData(data, toPeers: self.connectedPeers.allObjects, withMode: MCSessionSendDataMode.Unreliable, error: &error) {
             println(error?.localizedDescription)
             return false
         }

@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		E222634D1ADC162600E454EC /* ChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E22263441ADC162600E454EC /* ChatViewController.swift */; };
 		E222634F1ADC162600E454EC /* ClockMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = E22263461ADC162600E454EC /* ClockMessage.swift */; };
 		E22263501ADC162600E454EC /* LeaderElection.swift in Sources */ = {isa = PBXBuildFile; fileRef = E22263471ADC162600E454EC /* LeaderElection.swift */; };
 		E22263511ADC162600E454EC /* LeaderElectMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = E22263481ADC162600E454EC /* LeaderElectMessage.swift */; };
@@ -33,7 +32,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		E22263441ADC162600E454EC /* ChatViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatViewController.swift; sourceTree = "<group>"; };
 		E22263461ADC162600E454EC /* ClockMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ClockMessage.swift; sourceTree = "<group>"; };
 		E22263471ADC162600E454EC /* LeaderElection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LeaderElection.swift; sourceTree = "<group>"; };
 		E22263481ADC162600E454EC /* LeaderElectMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LeaderElectMessage.swift; sourceTree = "<group>"; };
@@ -91,18 +89,17 @@
 		E2AED0271ADC147D0031B9B4 /* Sonorus */ = {
 			isa = PBXGroup;
 			children = (
-				E2AED02C1ADC147D0031B9B4 /* ViewController.swift */,
-				E22263441ADC162600E454EC /* ChatViewController.swift */,
-				E22263461ADC162600E454EC /* ClockMessage.swift */,
 				E22263551ADC167300E454EC /* AppDelegate.swift */,
+				E22263571ADC171F00E454EC /* Clock.swift */,
+				E22263461ADC162600E454EC /* ClockMessage.swift */,
 				E22263471ADC162600E454EC /* LeaderElection.swift */,
 				E22263481ADC162600E454EC /* LeaderElectMessage.swift */,
 				E22263491ADC162600E454EC /* Message.swift */,
 				E222634A1ADC162600E454EC /* MPCManager.swift */,
-				E22263571ADC171F00E454EC /* Clock.swift */,
+				E2AED02C1ADC147D0031B9B4 /* ViewController.swift */,
 				E222635B1ADC177D00E454EC /* Main.storyboard */,
-				E2AED0311ADC147D0031B9B4 /* Images.xcassets */,
 				E2AED0331ADC147D0031B9B4 /* LaunchScreen.xib */,
+				E2AED0311ADC147D0031B9B4 /* Images.xcassets */,
 				E2AED0281ADC147D0031B9B4 /* Supporting Files */,
 			);
 			path = Sonorus;
@@ -239,7 +236,6 @@
 				E222634F1ADC162600E454EC /* ClockMessage.swift in Sources */,
 				E22263581ADC171F00E454EC /* Clock.swift in Sources */,
 				E2AED02D1ADC147D0031B9B4 /* ViewController.swift in Sources */,
-				E222634D1ADC162600E454EC /* ChatViewController.swift in Sources */,
 				E22263521ADC162600E454EC /* Message.swift in Sources */,
 				E22263501ADC162600E454EC /* LeaderElection.swift in Sources */,
 			);

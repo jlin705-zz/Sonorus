@@ -17,9 +17,9 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gxa-hB-UcM">
-                                <rect key="frame" x="0.0" y="479" width="600" height="95"/>
+                                <rect key="frame" x="0.0" y="479" width="600" height="101"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="95" id="jfa-yD-512"/>
+                                    <constraint firstAttribute="height" constant="101" id="YKi-Xs-MUY"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" type="system" pointSize="29"/>
                                 <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
@@ -52,15 +52,17 @@
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                         <constraints>
-                            <constraint firstItem="WCq-d6-pZz" firstAttribute="top" secondItem="jyV-Pf-zRb" secondAttribute="bottom" id="7MA-TV-0g2"/>
-                            <constraint firstAttribute="trailing" secondItem="gxa-hB-UcM" secondAttribute="trailing" id="BGG-16-T5f"/>
-                            <constraint firstItem="WCq-d6-pZz" firstAttribute="leading" secondItem="IlD-pl-rhk" secondAttribute="leading" id="Pic-4T-hhr"/>
-                            <constraint firstItem="gxa-hB-UcM" firstAttribute="top" secondItem="WCq-d6-pZz" secondAttribute="bottom" constant="8" symbolic="YES" id="YkM-bu-zRA"/>
-                            <constraint firstItem="gxa-hB-UcM" firstAttribute="leading" secondItem="WCq-d6-pZz" secondAttribute="leading" id="fBy-u0-kxF"/>
-                            <constraint firstItem="2fi-mo-0CV" firstAttribute="top" secondItem="gxa-hB-UcM" secondAttribute="bottom" constant="26" id="ga5-d9-rh7"/>
-                            <constraint firstItem="gxa-hB-UcM" firstAttribute="trailing" secondItem="WCq-d6-pZz" secondAttribute="trailing" id="mVI-HB-dvh"/>
+                            <constraint firstItem="WCq-d6-pZz" firstAttribute="leading" secondItem="IlD-pl-rhk" secondAttribute="leading" id="64h-SB-PSh"/>
+                            <constraint firstAttribute="trailing" secondItem="WCq-d6-pZz" secondAttribute="trailing" id="LgQ-Cl-Wsn"/>
+                            <constraint firstItem="gxa-hB-UcM" firstAttribute="trailing" secondItem="WCq-d6-pZz" secondAttribute="trailing" id="MXq-VY-25W"/>
+                            <constraint firstItem="gxa-hB-UcM" firstAttribute="top" secondItem="WCq-d6-pZz" secondAttribute="bottom" constant="8" symbolic="YES" id="WKG-v5-ADH"/>
+                            <constraint firstItem="WCq-d6-pZz" firstAttribute="leading" secondItem="gxa-hB-UcM" secondAttribute="leading" id="bGx-BI-TTJ"/>
+                            <constraint firstAttribute="bottom" secondItem="gxa-hB-UcM" secondAttribute="bottom" constant="20" symbolic="YES" id="fxf-al-oFj"/>
+                            <constraint firstItem="WCq-d6-pZz" firstAttribute="top" secondItem="jyV-Pf-zRb" secondAttribute="bottom" id="jaB-L7-mVk"/>
                         </constraints>
                     </view>
+                    <toolbarItems/>
+                    <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
                         <outlet property="clockTime" destination="gxa-hB-UcM" id="QrN-aW-Nbf"/>
                         <outlet property="tblPeers" destination="WCq-d6-pZz" id="ecu-dP-4MD"/>

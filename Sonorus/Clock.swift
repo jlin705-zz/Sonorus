@@ -42,11 +42,17 @@ class Clock: NSObject {
         // Sync time and create timer to query server
         if self.peerID != self.hostID {
             self.clientSendRequest()
-            self.clientTimer = NSTimer.scheduledTimerWithTimeInterval(5, target: self, selector: "clientSendRequest", userInfo: nil, repeats: true)
+            dispatch_async(dispatch_get_main_queue()) {
+                () -> Void in
+                self.clientTimer = NSTimer.scheduledTimerWithTimeInterval(5, target: self, selector: "clientSendRequest", userInfo: nil, repeats: true)
+            }
         }
         
         // Create timer to show on screen
-        self.showTimer = NSTimer.scheduledTimerWithTimeInterval(0.001, target: self, selector: "showTime", userInfo: nil, repeats: true)
+        dispatch_async(dispatch_get_main_queue()) {
+            () -> Void in
+            self.showTimer = NSTimer.scheduledTimerWithTimeInterval(0.001, target: self, selector: "showTime", userInfo: nil, repeats: true)
+        }
         
         // Add observer
         NSNotificationCenter.defaultCenter().addObserver(self, selector: "handleClockDataWithNotification:",
@@ -139,12 +145,13 @@ class Clock: NSObject {
     }
     
     func handleLeaderChangedWithNotification(notification: NSNotification) {
-        self.hostID = appDelegate.mpcManager.leader
+        self.hostID = appDelegate.mpcManager.leader  
         
         if self.peerID == self.hostID {
-            self.clientTimer?.invalidate()
-        } else {
-            self.clientTimer = NSTimer.scheduledTimerWithTimeInterval(5, target: self, selector: "clientSendRequest", userInfo: nil, repeats: true)
+            dispatch_async(dispatch_get_main_queue()) {
+                () -> Void in
+                self.clientTimer?.invalidate()
+            }
         }
     }
 }

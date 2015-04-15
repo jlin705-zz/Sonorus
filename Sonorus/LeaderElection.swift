@@ -13,6 +13,10 @@ class LeaderElection: NSObject{
     var receivedAnswer: Bool!
     var receiveVictory: Bool!
     
+    var waitResponseTimer: NSTimer?
+    var waitVictoryTimer: NSTimer?
+    
+    var isInElection: Bool!
     
     let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
     
@@ -23,7 +27,12 @@ class LeaderElection: NSObject{
     func setup(){
         leader = appDelegate.mpcManager.leader
         me = appDelegate.mpcManager.peer
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "handleLostPeer", name: "lostPeerNotification", object: nil)
+        
+        self.receivedAnswer = false //did not receive answer
+        self.receiveVictory = false
+        self.isInElection = false
+        
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "handleLostLeader", name: "lostLeaderNotification", object: nil)
         NSNotificationCenter.defaultCenter().addObserver(self, selector: "handleElectionMessage:", name: "receivedElectionNotification", object: nil)
     }
     
@@ -31,36 +40,59 @@ class LeaderElection: NSObject{
         return leader
     }
     
-    func handleLostPeer(){
-        println("lose peer, start new election")
-        startElection()
+    func handleLostLeader(){
+        println("Lost leader, start new election")
+        if !self.isInElection {
+            self.isInElection = true
+            startElection()
+        }
     }
     
     func startElection(){
+        println("start election!!!!!!")
+        
         let msgData = NSKeyedArchiver.archivedDataWithRootObject(LeaderElectMessage(kindTmp: "election"))
-        receivedAnswer = false //did not receive answer
         
-        //broadcast message and wait 1 second for answer
+        // Initialize state
+        self.receivedAnswer = false //did not receive answer
+        self.receiveVictory = false
+        
+        // Stop previous timer
+        dispatch_async(dispatch_get_main_queue()) {
+            () -> Void in
+            self.waitResponseTimer?.invalidate()
+            self.waitVictoryTimer?.invalidate()
+        }
+        
+        //broadcast message and wait 2 second for answer
         appDelegate.mpcManager.sendDataBroadcastReliable(messagePayload: msgData, messageType: "leaderElection")
-
-        var waitResponseTimer = NSTimer.scheduledTimerWithTimeInterval(2.0, target: self, selector: Selector("afterWait"), userInfo: nil, repeats: false)
         
+        println("before timer")
+        dispatch_async(dispatch_get_main_queue()) {
+            () -> Void in
+            self.waitResponseTimer = NSTimer.scheduledTimerWithTimeInterval(3.0, target: self, selector: "afterWait", userInfo: nil, repeats: false)
+        }
     }
     
     func afterWait(){
+        println("after wait \(receivedAnswer)")
+        
         if (!receivedAnswer){ //did not receive answer, this process is leader broadcast victory
             let victMsg = NSKeyedArchiver.archivedDataWithRootObject(LeaderElectMessage(kindTmp: "victory"))
+            
             appDelegate.mpcManager.sendDataBroadcastReliable(messagePayload: victMsg, messageType: "leaderElection")
+            
             leader = me //set leader to self
             appDelegate.mpcManager.leader = me
+            self.isInElection = false
+            
             println("change leader to \(me.displayName)")
+            
             //notify leader changed
             NSNotificationCenter.defaultCenter().postNotificationName("leaderChangeNotification", object: nil)
         }
         //else keep silent
     }
-    
-    //leaderChangeNotification
     
     
     //communication layer receive a election msg, use this method to respond
@@ -77,25 +109,43 @@ class LeaderElection: NSObject{
         
         switch electMsg.kind{
             case "election":
+                self.isInElection = true
+                println("me \(me.hashValue) fromPeer \(fromPeer.hashValue)")
                 if me.hashValue > fromPeer.hashValue {    //bigger than the sender
                     let answerData = NSKeyedArchiver.archivedDataWithRootObject(LeaderElectMessage(kindTmp: "answer"))
                     appDelegate.mpcManager.sendDataUnicastReliable(messagePayload: answerData, messageType: "leaderElection", toPeer: fromPeer)
                     
+                    println("send answer to \(fromPeer)")
                     startElection() //start a new election
                 }
                 //else keep silent
+            
+                //wait for victory, how long should we wait ? test to see
+                self.waitVictoryTimer?.invalidate()
+                dispatch_async(dispatch_get_main_queue()) {
+                    () -> Void in
+                    self.waitVictoryTimer = NSTimer.scheduledTimerWithTimeInterval(10.0, target: self, selector: "afterWaitVictory", userInfo: nil, repeats: false)
+                }
+
             case "answer": //??????
                 self.receivedAnswer = true
-                self.receiveVictory = false
+                println("receive Answer from \(fromPeer)")
                 //wait for victory, how long should we wait ? test to see
-                let waitVictoryTimer = NSTimer.scheduledTimerWithTimeInterval(2.0, target: self, selector: Selector("afterWaitVictory"), userInfo: nil, repeats: false)
+                self.waitVictoryTimer?.invalidate()
+                dispatch_async(dispatch_get_main_queue()) {
+                    () -> Void in
+                    self.waitVictoryTimer = NSTimer.scheduledTimerWithTimeInterval(10.0, target: self, selector: "afterWaitVictory", userInfo: nil, repeats: false)
+                }
             
             case "victory":
                 self.receiveVictory = true
                 self.leader = fromPeer //save leader
+                self.isInElection = false
+                
                 appDelegate.mpcManager.leader = fromPeer
                 println("change leader to \(fromPeer.displayName)")
-            NSNotificationCenter.defaultCenter().postNotificationName("leaderChangeNotification", object: nil)
+                NSNotificationCenter.defaultCenter().postNotificationName("leaderChangeNotification", object: nil)
+            
             default:
                 println("illegel election msg kind")
         }
@@ -107,5 +157,4 @@ class LeaderElection: NSObject{
             startElection()
         }
     }
-
 }
