@@ -43,24 +43,25 @@ class MPCManager: NSObject, MCSessionDelegate, MCNearbyServiceBrowserDelegate, M
     
     override init() {
         super.init()
+        println("init mpc")
         
         //self.lock = NSObject()
         
-        peer = MCPeerID(displayName: "Sonorus \(arc4random())")
-
-        viewPeers.addObject(peer)
-        
-        session = MCSession(peer: peer)
-        session.delegate = self
-        
-        browser = MCNearbyServiceBrowser(peer: peer, serviceType: "sonorus")
-        browser.delegate = self
-        
-        advertiser = MCNearbyServiceAdvertiser(peer: peer, discoveryInfo: nil, serviceType: "sonorus")
-        advertiser.delegate = self
-        
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "leaderChange",
-            name: "leaderChangeNotification", object: nil)
+//        peer = MCPeerID(displayName: "Sonorus \(arc4random())")
+//
+//        viewPeers.addObject(peer)
+//        
+//        session = MCSession(peer: peer)
+//        session.delegate = self
+//        
+//        browser = MCNearbyServiceBrowser(peer: peer, serviceType: "sonorus")
+//        browser.delegate = self
+//        
+//        advertiser = MCNearbyServiceAdvertiser(peer: peer, discoveryInfo: nil, serviceType: "sonorus")
+//        advertiser.delegate = self
+//        
+//        NSNotificationCenter.defaultCenter().addObserver(self, selector: "leaderChange",
+//            name: "leaderChangeNotification", object: nil)
     }
     
     func quit() {
