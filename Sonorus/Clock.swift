@@ -9,12 +9,8 @@
 import Foundation
 import MultipeerConnectivity
 
-protocol ClockDelegate {
-    func displayTime(time: NSDate)
-}
-
 class Clock: NSObject {
-    var delegate: ClockDelegate?
+    //var delegate: ClockDelegate?
     
     var hostID: MCPeerID!
     
@@ -48,15 +44,10 @@ class Clock: NSObject {
             }
         }
         
-        // Create timer to show on screen
-        dispatch_async(dispatch_get_main_queue()) {
-            () -> Void in
-            self.showTimer = NSTimer.scheduledTimerWithTimeInterval(0.001, target: self, selector: "showTime", userInfo: nil, repeats: true)
-        }
-        
         // Add observer
         NSNotificationCenter.defaultCenter().addObserver(self, selector: "handleClockDataWithNotification:",
             name: "receivedClockDataNotification", object: nil)
+        
         NSNotificationCenter.defaultCenter().addObserver(self, selector: "handleLeaderChangedWithNotification:",
             name: "leaderChangeNotification", object: nil)
     }
@@ -70,9 +61,7 @@ class Clock: NSObject {
         let data = NSKeyedArchiver.archivedDataWithRootObject(message)
         
         // Send request message
-        if appDelegate.mpcManager.sendDataUnicastUnreliable(messagePayload: data, messageType: "clock", toPeer: hostID) {
-            println("Send request to \(hostID.displayName)")
-        }
+        appDelegate.mpcManager.sendDataUnicastUnreliable(messagePayload: data, messageType: "clock", toPeer: hostID)
     }
     
     func clientGetReply(message: ClockMessage) {
@@ -93,9 +82,7 @@ class Clock: NSObject {
         // Send reply to client
         var data = NSKeyedArchiver.archivedDataWithRootObject(message)
         
-        if appDelegate.mpcManager.sendDataUnicastUnreliable(messagePayload: data, messageType: "clock", toPeer: fromPeer){
-            println("send reply to \(fromPeer.displayName)")
-        }
+        appDelegate.mpcManager.sendDataUnicastUnreliable(messagePayload: data, messageType: "clock", toPeer: fromPeer)
     }
     
     func handleClockDataWithNotification(notification: NSNotification) {
@@ -126,7 +113,6 @@ class Clock: NSObject {
         var t4 = message.arvtime
         
         self.offset = ((t2 - t1) + (t3 - t4))/2
-        println(offset)
     }
     
     func getClock() -> NSDate {
@@ -140,10 +126,6 @@ class Clock: NSObject {
         return NSDate.timeIntervalSinceReferenceDate() + offset
     }
     
-    func showTime() { 
-        delegate?.displayTime(self.getClock())
-    }
-    
     func handleLeaderChangedWithNotification(notification: NSNotification) {
         self.hostID = appDelegate.mpcManager.leader  
         
@@ -152,6 +134,9 @@ class Clock: NSObject {
                 () -> Void in
                 self.clientTimer?.invalidate()
             }
+            self.offset = 0
+        } else { //leader change, resync time
+            clientSendRequest()
         }
     }
 }

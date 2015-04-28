@@ -3,7 +3,7 @@
 //  MusicPlayerSonata
 //
 //  Created by jialiang lin on 4/13/15.
-//  Copyright (c) 2015 Team15. All rights reserved.
+//  Copyright (c) 2015 DS-Team15. All rights reserved.
 //
 
 import UIKit
@@ -12,12 +12,18 @@ import UIKit
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
-    var mpcManager: MPCManager!
     
+    var mpcManager: MPCManager!
+    var clockService: Clock!
+    var leaderElection_service: LeaderElection!
+    var audioList:NSMutableArray!
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         // Override point for customization after application launch.
         mpcManager = MPCManager()
+        clockService = Clock()
+        leaderElection_service = LeaderElection()
+        audioList = NSMutableArray()
         return true
     }
 

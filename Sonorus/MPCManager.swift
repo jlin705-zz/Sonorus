@@ -39,29 +39,32 @@ class MPCManager: NSObject, MCSessionDelegate, MCNearbyServiceBrowserDelegate, M
     
     var viewPeers = NSMutableSet() //for display, include self
 
+    let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+    
+    let fileManager = NSFileManager.defaultManager()
+
     //var lock: NSObject!
     
     override init() {
         super.init()
-        println("init mpc")
         
         //self.lock = NSObject()
         
-//        peer = MCPeerID(displayName: "Sonorus \(arc4random())")
-//
-//        viewPeers.addObject(peer)
-//        
-//        session = MCSession(peer: peer)
-//        session.delegate = self
-//        
-//        browser = MCNearbyServiceBrowser(peer: peer, serviceType: "sonorus")
-//        browser.delegate = self
-//        
-//        advertiser = MCNearbyServiceAdvertiser(peer: peer, discoveryInfo: nil, serviceType: "sonorus")
-//        advertiser.delegate = self
-//        
-//        NSNotificationCenter.defaultCenter().addObserver(self, selector: "leaderChange",
-//            name: "leaderChangeNotification", object: nil)
+        peer = MCPeerID(displayName: "Sonorus \(arc4random())")
+
+        viewPeers.addObject(peer)
+        
+        session = MCSession(peer: peer)
+        session.delegate = self
+        
+        browser = MCNearbyServiceBrowser(peer: peer, serviceType: "sonorus")
+        browser.delegate = self
+        
+        advertiser = MCNearbyServiceAdvertiser(peer: peer, discoveryInfo: nil, serviceType: "sonorus")
+        advertiser.delegate = self
+        
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "leaderChange",
+            name: "leaderChangeNotification", object: nil)
     }
     
     func quit() {
@@ -177,13 +180,69 @@ class MPCManager: NSObject, MCSessionDelegate, MCNearbyServiceBrowserDelegate, M
         } else if message.type == "leaderElection" {
             let dictionary: [String: AnyObject] = ["data": message.msg, "fromPeer": peerID]
             NSNotificationCenter.defaultCenter().postNotificationName("receivedElectionNotification", object: dictionary)
+        } else if message.type == "sync" {
+            let dictionary: [String: AnyObject] = ["data": message.msg, "fromPeer": peerID]
+            NSNotificationCenter.defaultCenter().postNotificationName("receiveSyncNotification", object: dictionary)
+        }else if message.type == "songLookup" {
+            let dict: [String:AnyObject] = NSKeyedUnarchiver.unarchiveObjectWithData(message.msg)! as! [String:AnyObject]
+            let song = dict["song"] as! Song
+            println("lookup: " + (song.Title as String) + (song.Artist as String))
+            println(appDelegate.audioList.count)
+            for localSong in appDelegate.audioList as NSArray{
+                let s = localSong as! Song
+                println("local: " + (s.Title as String) + (s.Artist as String))
+                if (s.Title as String) == (song.Title as String) &&
+                    (s.Artist as String) == (song.Artist as String) {
+                        println("Song already on disk: " + (s.Title as String))
+                        let dictionary: [String: AnyObject] = ["songPath": s.AudioPath]
+                        NSNotificationCenter.defaultCenter().postNotificationName("receiveSongNotification", object: dictionary)
+                        return
+                }
+            }
+            println((song.Title as String) + " not found, sending file request")
+            sendFileRequest(song: song)
+        } else if message.type == "songData" {
+            
+            let dict: [String:AnyObject] = NSKeyedUnarchiver.unarchiveObjectWithData(message.msg)! as! [String:AnyObject]
+            let songTitle = dict["songTitle"] as! String
+            
+            let paths:NSArray = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.UserDomainMask, true)
+            
+            println("Received song: " + songTitle)
+            let basePath: AnyObject! = (paths.count > 0) ? paths.objectAtIndex(0) : nil
+            var s = basePath as! String
+            let url = NSURL(fileURLWithPath: s + "/" + songTitle + ".mp3")
+            
+            dict["data"]?.writeToURL(url!, options: nil, error: nil)
+            println("New song has path: " + s + "/" + songTitle + ".mp3")
+            let dictionary: [String: AnyObject] = ["songPath": url!]
+            NSNotificationCenter.defaultCenter().postNotificationName("receiveSongNotification", object: dictionary)
+        } else if message.type == "songRequest" {
+            let dict: [String:AnyObject] = NSKeyedUnarchiver.unarchiveObjectWithData(message.msg)! as! [String:AnyObject]
+            let song = dict["song"] as! Song
+            sendFile(song, withPeer: peerID)
         }
     }
     
     
-    func session(session: MCSession!, didStartReceivingResourceWithName resourceName: String!, fromPeer peerID: MCPeerID!, withProgress progress: NSProgress!) { }
+    func session(session: MCSession!, didStartReceivingResourceWithName resourceName: String!, fromPeer peerID: MCPeerID!, withProgress progress: NSProgress!) {
+        println("start receving file \(resourceName)")
+    }
     
-    func session(session: MCSession!, didFinishReceivingResourceWithName resourceName: String!, fromPeer peerID: MCPeerID!, atURL localURL: NSURL!, withError error: NSError!) { }
+    func session(session: MCSession!, didFinishReceivingResourceWithName resourceName: String!, fromPeer peerID: MCPeerID!, atURL localURL: NSURL!, withError error: NSError!) {
+        println("finished receving file \(resourceName)")
+       let paths:NSArray = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.UserDomainMask, true)
+        
+        let basePath: AnyObject! = (paths.count > 0) ? paths.objectAtIndex(0) : nil
+        
+        let s = basePath as! String
+        let dstURL = NSURL(fileURLWithPath: s + "/" + resourceName + ".mp3")
+        
+        fileManager.moveItemAtURL(localURL, toURL: dstURL!, error: nil)
+
+        let dictionary: [String: AnyObject] = ["songPath": dstURL!]
+        NSNotificationCenter.defaultCenter().postNotificationName("receiveSongNotification", object: dictionary)
+    }
     
     func session(session: MCSession!, didReceiveStream stream: NSInputStream!, withName streamName: String!, fromPeer peerID: MCPeerID!) { }
     
@@ -258,5 +317,43 @@ class MPCManager: NSObject, MCSessionDelegate, MCNearbyServiceBrowserDelegate, M
     
     func leaderChange () {
         delegate?.leaderChange()
+    }
+    
+    //qinyu added
+    func sendFileRequest(#song: Song) {
+        let qualityOfServiceClass = QOS_CLASS_BACKGROUND
+        let backgroundQueue = dispatch_get_global_queue(qualityOfServiceClass, 0)
+        dispatch_async(backgroundQueue, {
+            let dict : [String : AnyObject] = ["song": song]
+            let result = self.sendDataBroadcastReliable(messagePayload: NSKeyedArchiver.archivedDataWithRootObject(dict), messageType: "songRequest")
+            println("Sent song request: " + (song.Title as String))
+        })
+    }
+    
+    func sendFileLookup(#song: Song) {
+        let qualityOfServiceClass = QOS_CLASS_BACKGROUND
+        let backgroundQueue = dispatch_get_global_queue(qualityOfServiceClass, 0)
+        dispatch_async(backgroundQueue, {
+            let dict : [String : AnyObject] = ["song": song]
+            let result = self.sendDataBroadcastReliable(messagePayload: NSKeyedArchiver.archivedDataWithRootObject(dict), messageType: "songLookup")
+            println("Sent song lookup: " + (song.Title as String))
+        })
+    }
+    
+    func sendFile(song: Song, withPeer peerID: MCPeerID) {
+        session.sendResourceAtURL(song.AudioPath, withName: song.Title as String, toPeer: peerID, withCompletionHandler: sendFileHandler)
+//        let qualityOfServiceClass = QOS_CLASS_BACKGROUND
+//        let backgroundQueue = dispatch_get_global_queue(qualityOfServiceClass, 0)
+//        dispatch_async(backgroundQueue, {
+//            let fileData = NSData(contentsOfURL: song.AudioPath)
+//            let dict : [String : AnyObject] = ["songTitle": song.Title as String, "data": fileData!]
+//            let result = self.sendDataUnicastReliable(messagePayload: NSKeyedArchiver.archivedDataWithRootObject(dict), messageType: "songData", toPeer: peerID)
+//            println("Sent song data: " + (song.Title as String))
+//        })
+        
+    }
+    
+    func sendFileHandler(error: NSError!) -> Void {
+        println("file send complete")
     }
 }
