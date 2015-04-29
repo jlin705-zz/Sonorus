@@ -17,6 +17,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var clockService: Clock!
     var leaderElection_service: LeaderElection!
     var audioList:NSMutableArray!
+    var sharedAudioList:NSMutableArray!
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         // Override point for customization after application launch.
@@ -24,6 +25,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         clockService = Clock()
         leaderElection_service = LeaderElection()
         audioList = NSMutableArray()
+        sharedAudioList = NSMutableArray()
         return true
     }
 

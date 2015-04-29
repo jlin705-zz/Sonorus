@@ -35,7 +35,6 @@ class ViewController: UIViewController, UITableViewDelegate,AVAudioPlayerDelegat
     var totalLengthOfAudio = ""
     var finalImage:UIImage!
     var isTableViewOnscreen = false
-    var sharedAudioList:NSMutableArray! = NSMutableArray()
     
     let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
     
@@ -47,6 +46,7 @@ class ViewController: UIViewController, UITableViewDelegate,AVAudioPlayerDelegat
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        println("did load")
         /**
         Qinyu added
         */
@@ -89,7 +89,9 @@ class ViewController: UIViewController, UITableViewDelegate,AVAudioPlayerDelegat
         rotationAnimation()
         pauseLayer(photo.layer)
         
-        if (sharedAudioList.count != 0){
+        println("sharelist length: \(appDelegate.sharedAudioList.count)")
+        
+        if (appDelegate.sharedAudioList.count != 0){
             prepareAudio()
             self.updatePrepareAudioUI()
         }
@@ -126,13 +128,13 @@ class ViewController: UIViewController, UITableViewDelegate,AVAudioPlayerDelegat
     @IBAction func showPlayList(sender: UIButton) {
         var playList:ShareListView = NSBundle.mainBundle().loadNibNamed("ShareListView", owner: self, options: nil).last as! ShareListView
         
-        playList.tableData = self.sharedAudioList
+        playList.tableData = self.appDelegate.sharedAudioList
         playList.viewController = self
         playList.showShareListView()
     }
     
     @IBAction func play(sender : UIButton) {
-        if (sharedAudioList.count != 0) {
+        if (appDelegate.sharedAudioList.count != 0) {
             if audioPlayer!.playing {
                 self.sendSyncMessage("pause", relativeTime: nil, songIndex: nil)
                 self.pauseAudioPlayer()
@@ -153,13 +155,13 @@ class ViewController: UIViewController, UITableViewDelegate,AVAudioPlayerDelegat
     }
     
     @IBAction func next(sender : AnyObject) {
-        if (sharedAudioList.count != 0) {
+        if (appDelegate.sharedAudioList.count != 0) {
             self.playNextAudio()
         }
     }
     
     @IBAction func previous(sender : AnyObject) {
-        if (sharedAudioList.count != 0) {
+        if (appDelegate.sharedAudioList.count != 0) {
             self.playPreviousAudio()
         }
     }
@@ -173,7 +175,8 @@ class ViewController: UIViewController, UITableViewDelegate,AVAudioPlayerDelegat
         if (segue.identifier == "showView") {
             var upcoming: LocalListViewController = segue.destinationViewController as! LocalListViewController
             upcoming.tableData = self.appDelegate.audioList
-            upcoming.sharedList = self.sharedAudioList
+            upcoming.viewContorller = self
+            //upcoming.sharedList = self.appDelegate.sharedAudioList
         }
         
         if (segue.identifier == "showPeer") {
@@ -200,28 +203,32 @@ class ViewController: UIViewController, UITableViewDelegate,AVAudioPlayerDelegat
     }
     
     func pauseLayer(layer:CALayer){
-        var pausedTime:CFTimeInterval = layer.convertTime(CACurrentMediaTime(), fromLayer: nil)
-        layer.speed = 0.0
-        layer.timeOffset = pausedTime
+        if (layer.speed != 0.0){
+            var pausedTime:CFTimeInterval = layer.convertTime(CACurrentMediaTime(), fromLayer: nil)
+            layer.speed = 0.0
+            layer.timeOffset = pausedTime
+        }
     }
     
     func resumeLayer(layer:CALayer){
-        var pausedTime:CFTimeInterval = layer.timeOffset
+        if (layer.speed == 0.0){
+            var pausedTime:CFTimeInterval = layer.timeOffset
         
-        layer.speed = 1.0
-        layer.timeOffset = 0.0
-        layer.beginTime = 0.0
+            layer.speed = 1.0
+            layer.timeOffset = 0.0
+            layer.beginTime = 0.0
         
-        var timeSincePause:CFTimeInterval = layer.convertTime(CACurrentMediaTime(), fromLayer: nil) - pausedTime
+            var timeSincePause:CFTimeInterval = layer.convertTime(CACurrentMediaTime(), fromLayer: nil) - pausedTime
         
-        layer.beginTime = timeSincePause
+            layer.beginTime = timeSincePause
+        }
     }
     
     func audioPlayerDidFinishPlaying(player: AVAudioPlayer!, successfully flag: Bool) {
         if flag {
             currentAudioIndex++
             
-            if currentAudioIndex > sharedAudioList.count - 1 {
+            if currentAudioIndex > appDelegate.sharedAudioList.count - 1 {
                 currentAudioIndex = 0
             }
             
@@ -293,11 +300,10 @@ class ViewController: UIViewController, UITableViewDelegate,AVAudioPlayerDelegat
         AVAudioSession.sharedInstance().setCategory(AVAudioSessionCategoryPlayback, error: nil)
         AVAudioSession.sharedInstance().setActive(true, error: nil)
         UIApplication.sharedApplication().beginReceivingRemoteControlEvents()
-        println("Current Audio Index: \(currentAudioIndex)")
         
-        var currentSong: Song = sharedAudioList[currentAudioIndex] as! Song
         
-        println(currentSong.AudioPath)
+        var currentSong: Song = appDelegate.sharedAudioList[currentAudioIndex] as! Song
+        println("Prepare Audio: Current Index: \(currentAudioIndex) \nsong: \(currentSong.Title)")
         
         audioPlayer = AVAudioPlayer(contentsOfURL: currentSong.AudioPath, error: nil)
         audioPlayer!.delegate = self
@@ -334,7 +340,7 @@ class ViewController: UIViewController, UITableViewDelegate,AVAudioPlayerDelegat
     func playNextAudio(){
         currentAudioIndex++
         
-        if currentAudioIndex > sharedAudioList.count - 1 { //go to the first song
+        if currentAudioIndex > appDelegate.sharedAudioList.count - 1 { //go to the first song
             currentAudioIndex = 0
         }
         prepareAudio()
@@ -358,7 +364,7 @@ class ViewController: UIViewController, UITableViewDelegate,AVAudioPlayerDelegat
         currentAudioIndex--
         
         if currentAudioIndex < 0 { //go to the last song
-            currentAudioIndex = sharedAudioList.count - 1
+            currentAudioIndex = appDelegate.sharedAudioList.count - 1
         }
         
         prepareAudio()
@@ -431,7 +437,7 @@ class ViewController: UIViewController, UITableViewDelegate,AVAudioPlayerDelegat
         let paths:NSArray = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.UserDomainMask, true)
         
         let basePath: AnyObject! = (paths.count > 0) ? paths.objectAtIndex(0) : nil
-        println(basePath)
+        //println(basePath)
         
         let files = filemanager.enumeratorAtPath(basePath as! String)
 
@@ -443,7 +449,7 @@ class ViewController: UIViewController, UITableViewDelegate,AVAudioPlayerDelegat
     }
     
     func updateLabels() {
-        var currentSong:Song = sharedAudioList[currentAudioIndex] as! Song
+        var currentSong:Song = appDelegate.sharedAudioList[currentAudioIndex] as! Song
         
         titleLabel.text = currentSong.Title as String
         artistLabel.text = currentSong.Artist as String
@@ -591,16 +597,16 @@ class ViewController: UIViewController, UITableViewDelegate,AVAudioPlayerDelegat
         
         //reload the audio list
         setAudioList()
-        sharedAudioList.addObject(getMusicInfo(songPath)) //add song to shared playlist
+        appDelegate.sharedAudioList.addObject(getMusicInfo(songPath)) //add song to shared playlist
         
-        println("\n handle received song, add song \(songPath)")
+        println("\nhandle received song, add song \(getMusicInfo(songPath).Title)")
         
-        self.prepareAudio()
-        
-        dispatch_async(dispatch_get_main_queue()) {
-            () -> Void in
-            if (self.sharedAudioList.count != 0){
-                self.updatePrepareAudioUI()
+        if (self.appDelegate.sharedAudioList.count == 1){
+            println("first song prepare audio!!!!!!")
+            self.prepareAudio()
+            dispatch_async(dispatch_get_main_queue()) {
+                () -> Void in
+                    self.updatePrepareAudioUI()
             }
         }
     }

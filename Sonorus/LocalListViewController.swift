@@ -13,7 +13,7 @@ class LocalListViewController: UIViewController ,UITableViewDataSource, UITableV
     
     var tableData:NSMutableArray=NSMutableArray()
     var viewContorller:ViewController=ViewController()
-    var sharedList:NSMutableArray = NSMutableArray()
+    //var sharedList:NSMutableArray = NSMutableArray()
     
     let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
     
@@ -50,19 +50,29 @@ class LocalListViewController: UIViewController ,UITableViewDataSource, UITableV
     }
     
     @IBAction func addAction(sender: UIButton){
-        sharedList.addObject(tableData[sender.tag])
-        println("add song to shared playlist, broadcasting file to peers")
+        appDelegate.sharedAudioList.addObject(tableData[sender.tag])
         //read file from the disk
         var song = tableData[sender.tag] as! Song
+        println("Add “\(song.Title)” to shared playlist, Broadcasting")
         appDelegate.mpcManager.sendFileLookup(song: song)
-        self.performSegueWithIdentifier("updateList", sender: self)
+        println("send file return")
+        if (appDelegate.sharedAudioList.count == 1){
+            viewContorller.prepareAudio()
+            dispatch_async(dispatch_get_main_queue()) {
+                () -> Void in
+                self.viewContorller.updatePrepareAudioUI()
+            }
+            
+        }
+        
+        //self.performSegueWithIdentifier("updateList", sender: self)
     }
     
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        if (segue.identifier == "updateList"){
-            var upcoming: ViewController = segue.destinationViewController as! ViewController
-            upcoming.sharedAudioList = self.sharedList
-        }
-    }
+//    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+//        if (segue.identifier == "updateList"){
+//            var upcoming: ViewController = segue.destinationViewController as! ViewController
+//            upcoming.sharedAudioList = self.sharedList
+//        }
+//    }
 
 }

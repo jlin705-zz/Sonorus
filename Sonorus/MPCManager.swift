@@ -342,14 +342,6 @@ class MPCManager: NSObject, MCSessionDelegate, MCNearbyServiceBrowserDelegate, M
     
     func sendFile(song: Song, withPeer peerID: MCPeerID) {
         session.sendResourceAtURL(song.AudioPath, withName: song.Title as String, toPeer: peerID, withCompletionHandler: sendFileHandler)
-//        let qualityOfServiceClass = QOS_CLASS_BACKGROUND
-//        let backgroundQueue = dispatch_get_global_queue(qualityOfServiceClass, 0)
-//        dispatch_async(backgroundQueue, {
-//            let fileData = NSData(contentsOfURL: song.AudioPath)
-//            let dict : [String : AnyObject] = ["songTitle": song.Title as String, "data": fileData!]
-//            let result = self.sendDataUnicastReliable(messagePayload: NSKeyedArchiver.archivedDataWithRootObject(dict), messageType: "songData", toPeer: peerID)
-//            println("Sent song data: " + (song.Title as String))
-//        })
         
     }
     
