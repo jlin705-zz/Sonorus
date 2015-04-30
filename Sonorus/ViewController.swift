@@ -7,6 +7,8 @@
 //  Copyright (c) 2015 DS-Team15. All rights reserved.
 //
 
+// ToDo: block ui until list finish
+
 import UIKit
 import AVFoundation
 import MultipeerConnectivity
@@ -25,16 +27,12 @@ class ViewController: UIViewController, UITableViewDelegate,AVAudioPlayerDelegat
     
     
     var audioPlayer: AVAudioPlayer?
-    var currentAudio = "";
-    //var audioList:NSMutableArray! = NSMutableArray()
+    
     var currentAudioIndex = 0
-    var timer:NSTimer!
+    var timer:NSTimer?
     var audioLength = 0.0
-    var toggle = true
-    var effectToggle = true
     var totalLengthOfAudio = ""
-    var finalImage:UIImage!
-    var isTableViewOnscreen = false
+    var rotation: CABasicAnimation!
     
     let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
     
@@ -46,70 +44,72 @@ class ViewController: UIViewController, UITableViewDelegate,AVAudioPlayerDelegat
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        println("did load")
         /**
         Qinyu added
         */
-        appDelegate.mpcManager.advertiser.startAdvertisingPeer()
+        self.appDelegate.mpcManager.advertiser.startAdvertisingPeer()
         
         var timer = NSTimer.scheduledTimerWithTimeInterval(3, target: self, selector: Selector("startBrowsing"), userInfo: nil, repeats: false)
-        isAdvertising = true
+        self.isAdvertising = true
         
         
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "startClockAndLeaderElectionService",
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "setupService",
             name: "getLeaderNotification", object: nil)
         
         NSNotificationCenter.defaultCenter().addObserver(self, selector: "handleReceiveSongNotification:",
-            name: "receiveSongNotification", object: nil)
+            name: "receivedSongNotification", object: nil)
         
         NSNotificationCenter.defaultCenter().addObserver(self, selector: "handleSyncMessageNotification:",
-            name: "receiveSyncNotification", object: nil)
+            name: "receivedSyncNotification", object: nil)
+        
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "handleGuestReadyNotification:",
+            name: "receivedGuestReadyNotification", object: nil)
 
         //new added section end
         
-        photo.layer.cornerRadius = self.photo.frame.size.width/2.0
-        photo.clipsToBounds = true
-        photoBorderView.layer.cornerRadius = self.photoBorderView.frame.size.width/2.0
-        photoBorderView.clipsToBounds = true
+        self.photo.layer.cornerRadius = self.photo.frame.size.width/2.0
+        self.photo.clipsToBounds = true
+        self.photoBorderView.layer.cornerRadius = self.photoBorderView.frame.size.width/2.0
+        self.photoBorderView.clipsToBounds = true
         
         //blurr
         let blurEffect = UIBlurEffect(style: UIBlurEffectStyle.Dark)
         let blureView = UIVisualEffectView(effect: blurEffect)
         blureView.frame = self.view.frame
-        backgroundImageView.addSubview(blureView)
+        self.backgroundImageView.addSubview(blureView)
         
         //set slider icon
-        progressSlider.setMinimumTrackImage(UIImage(named: "player_slider_playback_left.png"), forState: UIControlState.Normal)
-        progressSlider.setMaximumTrackImage(UIImage(named: "player_slider_playback_right.png"), forState: UIControlState.Normal)
-        progressSlider.setThumbImage(UIImage(named: "player_slider_playback_thumb.png"), forState: UIControlState.Normal)
+        self.progressSlider.setMinimumTrackImage(UIImage(named: "player_slider_playback_left.png"), forState: UIControlState.Normal)
+        self.progressSlider.setMaximumTrackImage(UIImage(named: "player_slider_playback_right.png"), forState: UIControlState.Normal)
+        self.progressSlider.setThumbImage(UIImage(named: "player_slider_playback_thumb.png"), forState: UIControlState.Normal)
+        self.progressSlider.userInteractionEnabled = false
         
-        setAudioList()
+        // timer for progress bar
+        self.startTimer()
+        
+        self.setAudioList()
         
         // rotation
-        rotationAnimation()
-        pauseLayer(photo.layer)
-        
-        println("sharelist length: \(appDelegate.sharedAudioList.count)")
-        
-        if (appDelegate.sharedAudioList.count != 0){
-            prepareAudio()
-            self.updatePrepareAudioUI()
-        }
+        self.rotationAnimation()
+        println("LOaddddddd")
+        self.pauseLayer(self.photo.layer)
     }
     
     func startBrowsing() {
-        if appDelegate.mpcManager.leader == nil {
-            appDelegate.mpcManager.leader = appDelegate.mpcManager.peer
+        if self.appDelegate.mpcManager.leader == nil {
+            self.appDelegate.mpcManager.leader = self.appDelegate.mpcManager.peer
             NSNotificationCenter.defaultCenter().postNotificationName("getLeaderNotification", object: nil)
+            
+            appDelegate.mpcManager.initState = false
         }
-        //tblPeers.reloadData()
-        appDelegate.mpcManager.browser.startBrowsingForPeers()
+
+        self.appDelegate.mpcManager.browser.startBrowsingForPeers()
     }
     
     
-    func startClockAndLeaderElectionService() {
-        appDelegate.clockService.setup()
-        appDelegate.leaderElection_service.setup()
+    func setupService() {
+        self.appDelegate.clockService.setup()
+        self.appDelegate.leaderElection_service.setup()
     }
     
     override func didReceiveMemoryWarning() {
@@ -134,41 +134,41 @@ class ViewController: UIViewController, UITableViewDelegate,AVAudioPlayerDelegat
     }
     
     @IBAction func play(sender : UIButton) {
-        if (appDelegate.sharedAudioList.count != 0) {
-            if audioPlayer!.playing {
-                self.sendSyncMessage("pause", relativeTime: nil, songIndex: nil)
+        if (self.appDelegate.sharedAudioList.count != 0) {
+            if self.audioPlayer!.playing {
+                self.sendSyncMessageBroadcast("pause", relativeTime: nil, songIndex: nil)
                 self.pauseAudioPlayer()
                 
                 self.playButton.setImage(playImage, forState: UIControlState.Normal)
                 
-                self.pauseLayer(photo.layer)
+                self.pauseLayer(self.photo.layer)
             } else {
-                self.sendSyncMessage("play", relativeTime: audioPlayer!.currentTime, songIndex: currentAudioIndex)
+                self.sendSyncMessageBroadcast("play", relativeTime: self.audioPlayer!.currentTime, songIndex: self.currentAudioIndex)
                 self.playAudio()
-                self.updatePlayAudioUI()
                 
-                self.playButton.setImage(pauseImage, forState: UIControlState.Normal)
+                self.playButton.setImage(self.pauseImage, forState: UIControlState.Normal)
                 
-                self.resumeLayer(photo.layer)
+                self.resumeLayer(self.photo.layer)
+//                self.rotationAnimation()
             }
         }
     }
     
     @IBAction func next(sender : AnyObject) {
-        if (appDelegate.sharedAudioList.count != 0) {
+        if (self.appDelegate.sharedAudioList.count != 0) {
             self.playNextAudio()
         }
     }
     
     @IBAction func previous(sender : AnyObject) {
-        if (appDelegate.sharedAudioList.count != 0) {
+        if (self.appDelegate.sharedAudioList.count != 0) {
             self.playPreviousAudio()
         }
     }
     
     @IBAction func changeAudioLocationSlider(sender : UISlider) {
 //        self.sendSyncMessage("playAt", relativeTime: sender.value, songIndex: nil)
-        audioPlayer?.currentTime = NSTimeInterval(sender.value)
+        self.audioPlayer?.currentTime = NSTimeInterval(sender.value)
     }
     
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
@@ -191,52 +191,73 @@ class ViewController: UIViewController, UITableViewDelegate,AVAudioPlayerDelegat
     }
     
     func rotationAnimation() {
-        let rotation = CABasicAnimation(keyPath: "transform.rotation.z")
+        self.rotation = CABasicAnimation(keyPath: "transform.rotation.z")
         
-        rotation.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionLinear)
-        rotation.toValue = 2*M_PI
-        rotation.duration = 16
-        rotation.repeatCount = HUGE
-        rotation.autoreverses = false
+        self.rotation.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionLinear)
+        self.rotation.toValue = 2*M_PI
+        self.rotation.duration = 16
+        self.rotation.repeatCount = HUGE
+        self.rotation.autoreverses = false
         
-        photo.layer.addAnimation(rotation, forKey: "rotationAnimation")
+        self.photo.layer.addAnimation(self.rotation, forKey: "rotationAnimation")
+        println("start: \(self.photo.layer)")
     }
     
-    func pauseLayer(layer:CALayer){
+    func pauseLayer(layer: CALayer){
+        //println("pause \(layer)")
         if (layer.speed != 0.0){
-            var pausedTime:CFTimeInterval = layer.convertTime(CACurrentMediaTime(), fromLayer: nil)
-            layer.speed = 0.0
+            var pausedTime:CFTimeInterval = layer.convertTime(CACurrentMediaTime(), fromLayer: self.photo.layer)
+            
             layer.timeOffset = pausedTime
+            layer.speed = 0.0
+            //println("pause: \(pausedTime)")
         }
     }
     
     func resumeLayer(layer:CALayer){
         if (layer.speed == 0.0){
+            //println("resume \(layer) \(self.photo.layer)")
+
             var pausedTime:CFTimeInterval = layer.timeOffset
-        
-            layer.speed = 1.0
             layer.timeOffset = 0.0
             layer.beginTime = 0.0
+            var timeSincePause:CFTimeInterval = layer.convertTime(CACurrentMediaTime(), fromLayer: self.photo.layer) - pausedTime
+            //var timeSincePause:CFTimeInterval = NSDate.timeIntervalSinceReferenceDate() - pausedTime
+            //println("current: \(layer.convertTime(CACurrentMediaTime(), fromLayer: self.photo.layer))")
+            //println("absolute: \(mach_absolute_time())")
         
-            var timeSincePause:CFTimeInterval = layer.convertTime(CACurrentMediaTime(), fromLayer: nil) - pausedTime
         
             layer.beginTime = timeSincePause
+            layer.speed = 1.0
+            //println(layer.beginTime)
+        }
+    }
+    
+    func setPlayButton() {
+        dispatch_async(dispatch_get_main_queue()) {
+            () -> Void in
+            self.playButton.setImage(self.playImage, forState: UIControlState.Normal)
+        }
+    }
+    
+    func setPauseButton() {
+        dispatch_async(dispatch_get_main_queue()) {
+            () -> Void in
+            self.playButton.setImage(self.pauseImage, forState: UIControlState.Normal)
         }
     }
     
     func audioPlayerDidFinishPlaying(player: AVAudioPlayer!, successfully flag: Bool) {
         if flag {
-            currentAudioIndex++
+            self.currentAudioIndex++
             
-            if currentAudioIndex > appDelegate.sharedAudioList.count - 1 {
-                currentAudioIndex = 0
+            if self.currentAudioIndex > self.appDelegate.sharedAudioList.count - 1 {
+                self.currentAudioIndex = 0
             }
             
             self.prepareAudio()
-            self.updatePrepareAudioUI()
             
             self.playAudio()
-            self.updatePlayAudioUI()
         }
     }
     
@@ -282,144 +303,121 @@ class ViewController: UIViewController, UITableViewDelegate,AVAudioPlayerDelegat
         return result
     }
     
-    func saveCurrentTrackNumber() {
-        NSUserDefaults.standardUserDefaults().setObject(currentAudioIndex, forKey:"currentAudioIndex")
-        NSUserDefaults.standardUserDefaults().synchronize()
-        
-    }
-    
-    func retrieveSavedTrackNumber() {
-        if let currentAudioIndex_ = NSUserDefaults.standardUserDefaults().objectForKey("currentAudioIndex") as? Int{
-            currentAudioIndex = currentAudioIndex_
-        } else {
-            currentAudioIndex = 0
-        }
-    }
-    
     func prepareAudio() {
         AVAudioSession.sharedInstance().setCategory(AVAudioSessionCategoryPlayback, error: nil)
         AVAudioSession.sharedInstance().setActive(true, error: nil)
         UIApplication.sharedApplication().beginReceivingRemoteControlEvents()
         
+        var currentSong: Song = self.appDelegate.sharedAudioList[currentAudioIndex] as! Song
+        //println("Prepare Audio: Current Index: \(currentAudioIndex) \nsong: \(currentSong.Title)")
         
-        var currentSong: Song = appDelegate.sharedAudioList[currentAudioIndex] as! Song
-        println("Prepare Audio: Current Index: \(currentAudioIndex) \nsong: \(currentSong.Title)")
+        self.audioPlayer = AVAudioPlayer(contentsOfURL: currentSong.AudioPath, error: nil)
+        self.audioPlayer!.delegate = self
         
-        audioPlayer = AVAudioPlayer(contentsOfURL: currentSong.AudioPath, error: nil)
-        audioPlayer!.delegate = self
+        self.audioLength = self.audioPlayer!.duration
         
-        audioLength = audioPlayer!.duration
+        self.progressSlider.maximumValue = CFloat(self.audioPlayer!.duration)
+        self.progressSlider.minimumValue = 0.0
+        self.progressSlider.value = 0.0
         
-        progressSlider.maximumValue = CFloat(audioPlayer!.duration)
-        progressSlider.minimumValue = 0.0
-        progressSlider.value = 0.0
+        self.audioPlayer!.prepareToPlay()
         
-        audioPlayer!.prepareToPlay()
-        
-        
-    }
-    
-    func updatePrepareAudioUI() {
-        updateLabels()
-        
-        showTotalSurahLength()
-        
-        playTimeLabel.text = "00:00"
+        self.updateLabels()
+        self.showTotalSurahLength()
+        dispatch_async(dispatch_get_main_queue()) {
+            () -> Void in
+            self.playTimeLabel.text = "00:00"
+        }
     }
     
     func playAudio() {
-        audioPlayer!.play()
-    }
-    
-    func updatePlayAudioUI() {
-        startTimer()
-        updateLabels()
-        //saveCurrentTrackNumber()
+        self.audioPlayer!.play()
     }
     
     func playNextAudio(){
-        currentAudioIndex++
+        self.currentAudioIndex++
         
-        if currentAudioIndex > appDelegate.sharedAudioList.count - 1 { //go to the first song
-            currentAudioIndex = 0
+        if self.currentAudioIndex > self.appDelegate.sharedAudioList.count - 1 { //go to the first song
+            self.currentAudioIndex = 0
         }
         prepareAudio()
-        self.updatePrepareAudioUI()
         
         // send sync message
-        self.sendSyncMessage("switch", relativeTime: 0, songIndex: currentAudioIndex)
-        
-        let playingBefore: Bool? = audioPlayer?.playing
+        self.sendSyncMessageBroadcast("switch", relativeTime: 0, songIndex: currentAudioIndex)
         
         playAudio()
-        self.updatePlayAudioUI()
         self.playButton.setImage(self.pauseImage, forState: UIControlState.Normal)
-        
-        if playingBefore != nil && playingBefore == false {
-            self.resumeLayer(self.photo.layer)
-        }
+        self.resumeLayer(self.photo.layer)
+//        self.rotationAnimation()
     }
     
     func playPreviousAudio() {
-        currentAudioIndex--
+        self.currentAudioIndex--
         
-        if currentAudioIndex < 0 { //go to the last song
-            currentAudioIndex = appDelegate.sharedAudioList.count - 1
+        if self.currentAudioIndex < 0 { //go to the last song
+            self.currentAudioIndex = appDelegate.sharedAudioList.count - 1
         }
         
-        prepareAudio()
-        self.updatePrepareAudioUI()
+        self.prepareAudio()
         
         // send sync message
-        self.sendSyncMessage("switch", relativeTime: 0, songIndex: currentAudioIndex)
+        self.sendSyncMessageBroadcast("switch", relativeTime: 0, songIndex: currentAudioIndex)
         
-        let playingBefore: Bool? = audioPlayer?.playing
-        
-        playAudio()
-        self.updatePlayAudioUI()
+        self.playAudio()
         self.playButton.setImage(self.pauseImage, forState: UIControlState.Normal)
-        
-        if playingBefore != nil && playingBefore == false {
-            self.resumeLayer(self.photo.layer)
-        }
+        self.resumeLayer(self.photo.layer)
+
+//        self.rotationAnimation()
     }
     
     func stopAudiplayer() {
-        audioPlayer!.stop();
+        self.audioPlayer!.stop();
     }
     
     func pauseAudioPlayer() {
-        audioPlayer!.pause()
+        self.audioPlayer!.pause()
     }
     
     func startTimer() {
-        if timer == nil {
-            timer = NSTimer.scheduledTimerWithTimeInterval(1.0, target: self, selector: Selector("update:"), userInfo: nil,repeats: true)
+        if self.timer == nil {
+            self.timer = NSTimer.scheduledTimerWithTimeInterval(1.0, target: self, selector: Selector("update"), userInfo: nil,repeats: true)
         }
     }
     
     func stopTimer() {
-        timer.invalidate()
+        self.timer?.invalidate()
+        self.timer = nil
     }
     
-    func update(timer: NSTimer) {
-        if !audioPlayer!.playing{
+    func update() {
+        if self.audioPlayer == nil {
             return
         }
         
-        var minute_ = abs(Int((audioPlayer!.currentTime/60) % 60))
-        var second_ = abs(Int(audioPlayer!.currentTime  % 60))
+        if !self.audioPlayer!.playing{
+            return
+        }
+        
+        var minute_ = abs(Int((self.audioPlayer!.currentTime/60) % 60))
+        var second_ = abs(Int(self.audioPlayer!.currentTime  % 60))
         
         var minute = minute_ > 9 ? "\(minute_)" : "0\(minute_)"
         var second = second_ > 9 ? "\(second_)" : "0\(second_)"
         
-        playTimeLabel.text  = "\(minute):\(second)"
-        progressSlider.value = CFloat(audioPlayer!.currentTime)
+        dispatch_async(dispatch_get_main_queue()) {
+            () -> Void in
+            self.playTimeLabel.text  = "\(minute):\(second)"
+            self.progressSlider.value = CFloat(self.audioPlayer!.currentTime)
+        }
     }
     
     func showTotalSurahLength() {
-        calculateSurahLength()
-        allTimeLabel.text = totalLengthOfAudio
+        self.calculateSurahLength()
+        
+        dispatch_async(dispatch_get_main_queue()) {
+            () -> Void in
+            self.allTimeLabel.text = self.totalLengthOfAudio
+        }
     }
     
     func calculateSurahLength() {
@@ -428,7 +426,7 @@ class ViewController: UIViewController, UITableViewDelegate,AVAudioPlayerDelegat
         
         var minute = minute_ > 9 ? "\(minute_)" : "0\(minute_)"
         var second = second_ > 9 ? "\(second_)" : "0\(second_)"
-        totalLengthOfAudio = "\(minute):\(second)"
+        self.totalLengthOfAudio = "\(minute):\(second)"
     }
     
     func setAudioList() {
@@ -437,24 +435,28 @@ class ViewController: UIViewController, UITableViewDelegate,AVAudioPlayerDelegat
         let paths:NSArray = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.UserDomainMask, true)
         
         let basePath: AnyObject! = (paths.count > 0) ? paths.objectAtIndex(0) : nil
-        //println(basePath)
         
         let files = filemanager.enumeratorAtPath(basePath as! String)
 
-        appDelegate.audioList = NSMutableArray()
+        self.appDelegate.audioList = NSMutableArray()
         
         while let file: AnyObject = files?.nextObject() {
-            appDelegate.audioList.addObject(getMusicInfo(setAudioPath(file as! String)))
+            if (file as! NSString).containsString(".mp3") {
+                self.appDelegate.audioList.addObject(getMusicInfo(setAudioPath(file as! String)))
+            }
         }
     }
     
     func updateLabels() {
         var currentSong:Song = appDelegate.sharedAudioList[currentAudioIndex] as! Song
         
-        titleLabel.text = currentSong.Title as String
-        artistLabel.text = currentSong.Artist as String
-        photo.image = currentSong.Image
-        backgroundImageView.image = photo.image
+        dispatch_async(dispatch_get_main_queue()) {
+            () -> Void in
+            self.titleLabel.text = currentSong.Title as String
+            self.artistLabel.text = currentSong.Artist as String
+            self.photo.image = currentSong.Image
+            self.backgroundImageView.image = self.photo.image
+        }
     }
     
     func handleSyncMessageNotification(notification: NSNotification) {
@@ -473,77 +475,62 @@ class ViewController: UIViewController, UITableViewDelegate,AVAudioPlayerDelegat
         switch syncMessage.kind {
             case "play":
                 // prepare song
-                currentAudioIndex = syncMessage.songIndex!
-                prepareAudio()
-                dispatch_async(dispatch_get_main_queue()) {
-                    () -> Void in
-                    self.updatePrepareAudioUI()
+                if syncMessage.songIndex > self.appDelegate.sharedAudioList.count - 1 {
+                    return
                 }
+                
+                self.currentAudioIndex = syncMessage.songIndex!
+                prepareAudio()
                 
                 let relativeTime = syncMessage.relativeTime
                 let absoluteTime = syncMessage.absoluteTime
                 let diff = appDelegate.clockService.getTimeInterval() - absoluteTime!
                 
-                audioPlayer!.currentTime = relativeTime! + diff
+                self.audioPlayer!.currentTime = relativeTime! + diff
                 
                 self.playAudio()
-                
+                self.setPauseButton()
                 dispatch_async(dispatch_get_main_queue()) {
                     () -> Void in
-                    self.updatePlayAudioUI()
-                    self.playButton.setImage(self.pauseImage, forState: UIControlState.Normal)
                     self.resumeLayer(self.photo.layer)
                 }
-                
-                
-                
+            
             case "playAt":
                 let relativeTime = syncMessage.relativeTime
                 let absoluteTime = syncMessage.absoluteTime
                 let diff = appDelegate.clockService.getTimeInterval() - absoluteTime!
                 
-                audioPlayer!.currentTime = relativeTime! + diff
-                playAudio()
+                self.audioPlayer!.currentTime = relativeTime! + diff
+                self.playAudio()
                 
             case "pause":
                 self.pauseAudioPlayer()
-                
+                self.setPlayButton()
                 dispatch_async(dispatch_get_main_queue()) {
                     () -> Void in
-                    self.playButton.setImage(self.playImage, forState: UIControlState.Normal)
                     self.pauseLayer(self.photo.layer)
                 }
             
             case "switch":
                 // prepare song
-                currentAudioIndex = syncMessage.songIndex!
-                prepareAudio()
-                dispatch_async(dispatch_get_main_queue()) {
-                    () -> Void in
-                    self.updatePrepareAudioUI()
+                if syncMessage.songIndex > self.appDelegate.sharedAudioList.count - 1 {
+                    return
                 }
+                
+                self.currentAudioIndex = syncMessage.songIndex!
+                prepareAudio()
                 
                 let relativeTime = syncMessage.relativeTime
                 let absoluteTime = syncMessage.absoluteTime
-                let diff = appDelegate.clockService.getTimeInterval() - absoluteTime!
+                let diff = self.appDelegate.clockService.getTimeInterval() - absoluteTime!
                 
-                audioPlayer!.currentTime = relativeTime! + diff
-                
-                let playingBefore: Bool? = audioPlayer?.playing
+                self.audioPlayer!.currentTime = relativeTime! + diff
                 
                 self.playAudio()
+                self.setPauseButton()
                 dispatch_async(dispatch_get_main_queue()) {
                     () -> Void in
-                    self.updatePlayAudioUI()
-                    self.playButton.setImage(self.pauseImage, forState: UIControlState.Normal)
                     self.resumeLayer(self.photo.layer)
-                }
-            
-                if playingBefore != nil && playingBefore == false {
-                    dispatch_async(dispatch_get_main_queue()) {
-                        () -> Void in
-                        self.resumeLayer(self.photo.layer)
-                    }
                 }
             
             default:
@@ -551,7 +538,27 @@ class ViewController: UIViewController, UITableViewDelegate,AVAudioPlayerDelegat
         }
     }
     
-    func sendSyncMessage(type: String, relativeTime: NSTimeInterval?, songIndex: Int?) {
+    func handleGuestReadyNotification(notification: NSNotification) {
+        // Get the ClockMessage containing the time data and source peer
+        let receivedDataDictionary = notification.object as! Dictionary<String, AnyObject>
+        
+        // "Extract" the data and the source peer from the received dictionary.
+        var data = receivedDataDictionary["data"] as! NSData
+        let fromPeer = receivedDataDictionary["fromPeer"] as! MCPeerID
+        
+        dispatch_async(dispatch_get_main_queue()) {
+            () -> Void in
+            var tempTimer: NSTimer = NSTimer.scheduledTimerWithTimeInterval(5.0, target: self, selector: "sendStartPlayToGuest:", userInfo: fromPeer, repeats: false)
+        }
+    }
+    
+    func sendStartPlayToGuest(tempTimer: NSTimer!) {
+        if self.audioPlayer?.playing != nil && self.audioPlayer!.playing {
+            self.sendSyncMessageUnicast("play", relativeTime: audioPlayer!.currentTime, songIndex: currentAudioIndex, peer: tempTimer.userInfo as! MCPeerID)
+        }
+    }
+    
+    func sendSyncMessageBroadcast(type: String, relativeTime: NSTimeInterval?, songIndex: Int?) {
         // Generate sync message
         var syncMessage = SyncMessage()
         syncMessage.kind = type
@@ -584,7 +591,43 @@ class ViewController: UIViewController, UITableViewDelegate,AVAudioPlayerDelegat
         let data = NSKeyedArchiver.archivedDataWithRootObject(syncMessage)
         
         // Send sync message
-        appDelegate.mpcManager.sendDataBroadcastReliable(messagePayload: data, messageType: "sync")
+        self.appDelegate.mpcManager.sendDataBroadcastReliable(messagePayload: data, messageType: "sync")
+    }
+    
+    func sendSyncMessageUnicast(type: String, relativeTime: NSTimeInterval?, songIndex: Int?, peer: MCPeerID) {
+        // Generate sync message
+        var syncMessage = SyncMessage()
+        syncMessage.kind = type
+        
+        switch type {
+            case "play":
+                syncMessage.relativeTime = relativeTime
+                syncMessage.absoluteTime = appDelegate.clockService.getTimeInterval()
+                syncMessage.songIndex = songIndex
+                println("Send Sync Message \(syncMessage.kind) \(syncMessage.relativeTime) \(syncMessage.absoluteTime) \(syncMessage.songIndex)")
+                
+            case "pause":
+                println("Send Sync Message \(syncMessage.kind)")
+                break
+                
+            case "playAt":
+                syncMessage.relativeTime = relativeTime
+                syncMessage.absoluteTime = appDelegate.clockService.getTimeInterval()
+                
+            case "switch":
+                syncMessage.relativeTime = relativeTime
+                syncMessage.absoluteTime = appDelegate.clockService.getTimeInterval()
+                syncMessage.songIndex = songIndex
+                
+            default:
+                break
+        }
+        
+        // Archived sync message
+        let data = NSKeyedArchiver.archivedDataWithRootObject(syncMessage)
+        
+        // Send sync message
+        self.appDelegate.mpcManager.sendDataUnicastReliable(messagePayload: data, messageType: "sync", toPeer: peer)
     }
     
     //handle notification posted by mpcmanager
@@ -596,18 +639,14 @@ class ViewController: UIViewController, UITableViewDelegate,AVAudioPlayerDelegat
         let songPath = receivedDataDictionary["songPath"] as! NSURL
         
         //reload the audio list
-        setAudioList()
-        appDelegate.sharedAudioList.addObject(getMusicInfo(songPath)) //add song to shared playlist
+        self.setAudioList()
+        self.appDelegate.sharedAudioList.addObject(getMusicInfo(songPath)) //add song to shared playlist
         
         println("\nhandle received song, add song \(getMusicInfo(songPath).Title)")
         
         if (self.appDelegate.sharedAudioList.count == 1){
             println("first song prepare audio!!!!!!")
             self.prepareAudio()
-            dispatch_async(dispatch_get_main_queue()) {
-                () -> Void in
-                    self.updatePrepareAudioUI()
-            }
         }
     }
 }

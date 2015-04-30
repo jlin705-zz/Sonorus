@@ -50,20 +50,20 @@ class LocalListViewController: UIViewController ,UITableViewDataSource, UITableV
     }
     
     @IBAction func addAction(sender: UIButton){
-        appDelegate.sharedAudioList.addObject(tableData[sender.tag])
+        self.appDelegate.sharedAudioList.addObject(tableData[sender.tag])
         //read file from the disk
         var song = tableData[sender.tag] as! Song
         println("Add “\(song.Title)” to shared playlist, Broadcasting")
-        appDelegate.mpcManager.sendFileLookup(song: song)
+        self.appDelegate.mpcManager.sendFileLookup(song: song)
         println("send file return")
-        if (appDelegate.sharedAudioList.count == 1){
-            viewContorller.prepareAudio()
-            dispatch_async(dispatch_get_main_queue()) {
-                () -> Void in
-                self.viewContorller.updatePrepareAudioUI()
-            }
-            
+        
+        if (appDelegate.sharedAudioList.count == 1){ //only the first song will need audio prepare
+            self.viewContorller.prepareAudio()
+//            viewContorller.rotationAnimation()
+//            viewContorller.pauseLayer(viewContorller.photo.layer)
         }
+//        viewContorller.rotationAnimation()
+//        viewContorller.pauseLayer(viewContorller.photo.layer)
         
         //self.performSegueWithIdentifier("updateList", sender: self)
     }

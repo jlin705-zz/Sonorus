@@ -56,14 +56,11 @@ class ShareListView: UIView,UITableViewDataSource,UITableViewDelegate {
         
         viewController.currentAudioIndex = indexPath.row
         viewController.prepareAudio()
-        viewController.updatePrepareAudioUI()
-        viewController.rotationAnimation()
         
-        viewController.sendSyncMessage("switch", relativeTime: 0, songIndex: viewController.currentAudioIndex)
+        viewController.sendSyncMessageBroadcast("switch", relativeTime: 0, songIndex: viewController.currentAudioIndex)
         
         viewController.playAudio()
-        viewController.updatePlayAudioUI()
-        viewController.playButton.setImage(UIImage(named: "player_btn_pause_normal@2x.png"), forState: UIControlState.Normal)
+        viewController.setPauseButton()
         
         self.removeFromSuperview()
     }

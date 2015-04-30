@@ -82,6 +82,7 @@ class LeaderElection: NSObject{
             
             leader = me //set leader to self
             appDelegate.mpcManager.leader = me
+            
             self.isInElection = false
             
             println("change leader to \(me.displayName)")
